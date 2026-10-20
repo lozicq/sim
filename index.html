@@ -10,24 +10,24 @@
 <style>
 /* 레이아웃: 폰 한 화면 고정 앱 — 상단(입력·요약) / 탭 / 탭 내용(내부 스크롤) / 직접 강화는 하단 버튼 고정 */
 :root{
-  --bg:#f3f1ec; --panel:#fffdf8; --ink:#1d2129; --muted:#666a72; --line:#ddd7cb;
-  --ether:#1f7a8c; --ether-soft:#d7ecef; --gold:#b07a12; --gold-soft:#f5e8c8;
+  --bg:#f3f1ec; --panel:#fffdf8; --ink:#1d2129; --muted:#52565e; --line:#ddd7cb;
+  --ether:#17697a; --ether-soft:#d7ecef; --gold:#9a6a0c; --gold-soft:#f5e8c8;
   --ok:#2e7d4f; --bar:#1f7a8c; --scrim:rgba(20,22,26,.45); --rose:#c0476b; --violet:#6d4fc2;
   --f-display:"Do Hyeon","Noto Sans KR",system-ui,sans-serif;
   --f-body:"Noto Sans KR",system-ui,-apple-system,sans-serif;
   --f-num:"JetBrains Mono",ui-monospace,Menlo,monospace;
 }
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
-  --bg:#14171c; --panel:#1c2027; --ink:#e8e6e1; --muted:#9a9ea6; --line:#2e333c;
+  --bg:#14171c; --panel:#1c2027; --ink:#e8e6e1; --muted:#b3b7bf; --line:#2e333c;
   --ether:#5cc6d8; --ether-soft:#16343a; --gold:#e0b04a; --gold-soft:#3a2f17;
   --ok:#5fc48a; --bar:#5cc6d8; --scrim:rgba(0,0,0,.6); --rose:#ef7f9f; --violet:#a58cf0; color-scheme:dark}}
 :root[data-theme="dark"]{
-  --bg:#14171c; --panel:#1c2027; --ink:#e8e6e1; --muted:#9a9ea6; --line:#2e333c;
+  --bg:#14171c; --panel:#1c2027; --ink:#e8e6e1; --muted:#b3b7bf; --line:#2e333c;
   --ether:#5cc6d8; --ether-soft:#16343a; --gold:#e0b04a; --gold-soft:#3a2f17;
   --ok:#5fc48a; --bar:#5cc6d8; --scrim:rgba(0,0,0,.6); --rose:#ef7f9f; --violet:#a58cf0; color-scheme:dark}
 *{box-sizing:border-box}
 html,body{height:100%}
-body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:14px;line-height:1.45;overflow:hidden;
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.5;overflow:hidden;
   padding-left:max(12px,env(safe-area-inset-left,0px));padding-right:max(12px,env(safe-area-inset-right,0px));padding-block:10px}
 .app{height:100%;max-width:760px;margin:0 auto;display:flex;flex-direction:column;gap:8px;min-height:0}
 .num{font-family:var(--f-num);font-variant-numeric:tabular-nums}
@@ -39,24 +39,25 @@ button.primary{background:var(--ether);border-color:var(--ether);color:var(--pan
 button.gold{background:var(--gold);border-color:var(--gold);color:var(--panel);font-weight:700}
 button:disabled{opacity:.5;cursor:default}
 .row{display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end}
-.note,.hint{font-size:.74rem;color:var(--muted);margin:0}
+.note,.hint{font-size:.8rem;line-height:1.45;color:var(--muted);margin:0}
 
 /* 상단 */
 .top{display:flex;align-items:center;justify-content:space-between;gap:8px}
-.top h1{font-family:var(--f-display);font-weight:400;font-size:1.35rem;margin:0;line-height:1.1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
-.top button{font-size:.8rem;padding:5px 9px;flex-shrink:0}
+.top h1{flex:1 1 auto;font-family:var(--f-display);font-weight:400;font-size:1.3rem;margin:0;line-height:1.1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.top button{font-size:.82rem;padding:6px 8px;flex-shrink:0;white-space:nowrap}
+.top .row{flex:0 0 auto}
 .inputs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
-label.f{display:flex;flex-direction:column;gap:2px;font-size:.7rem;color:var(--muted)}
+label.f{display:flex;flex-direction:column;gap:2px;font-size:.78rem;font-weight:500;color:var(--muted)}
 .summary{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
-.summary div{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:4px 8px;min-width:0}
-.summary span{display:block;font-size:.66rem;color:var(--muted)}
-.summary b{display:block;font-family:var(--f-num);font-size:.86rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.summary div{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:6px 9px;min-width:0}
+.summary span{display:block;font-size:.74rem;color:var(--muted)}
+.summary b{display:block;font-family:var(--f-num);font-size:1rem;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .summary .e b{color:var(--ether)} .summary .g b{color:var(--gold)}
 
 /* 탭 */
 .tabs{display:grid;grid-template-columns:repeat(3,1fr);border-bottom:1px solid var(--line)}
 .tabs button{border:none;border-bottom:3px solid transparent;border-radius:0;background:none;padding:7px 4px;
-  font-family:var(--f-display);font-size:1.05rem;color:var(--muted);white-space:nowrap}
+  font-family:var(--f-display);font-size:1.15rem;color:var(--muted);white-space:nowrap}
 .tabs button[aria-selected="true"]{color:var(--ether);border-bottom-color:var(--ether)}
 .pane{flex:1;min-height:0;display:flex;flex-direction:column;gap:8px;overflow:auto}
 .pane[hidden]{display:none!important}
@@ -64,10 +65,10 @@ label.f{display:flex;flex-direction:column;gap:2px;font-size:.7rem;color:var(--m
 
 /* 표 */
 table{border-collapse:collapse;width:100%}
-th,td{padding:4px 6px;text-align:right;border-bottom:1px solid var(--line);white-space:nowrap}
-th{position:sticky;top:0;background:var(--panel);font-weight:500;font-size:.7rem;color:var(--muted);z-index:1}
+th,td{padding:6px 8px;text-align:right;border-bottom:1px solid var(--line);white-space:nowrap}
+th{position:sticky;top:0;background:var(--panel);font-weight:600;font-size:.78rem;color:var(--muted);z-index:1}
 td:first-child,th:first-child{text-align:center}
-.lvl{font-family:var(--f-display);font-size:.95rem}
+.lvl{font-family:var(--f-display);font-size:1.05rem}
 td.g{color:var(--gold)} td.e{color:var(--ether)} td.m{color:var(--muted)}
 .pct td:first-child{text-align:left}
 .box{background:var(--panel);border:1px solid var(--line);border-radius:8px}
@@ -75,18 +76,21 @@ td.g{color:var(--gold)} td.e{color:var(--ether)} td.m{color:var(--muted)}
 /* 결과 칸 */
 .tiles{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
 @media (min-width:640px){.tiles{grid-template-columns:repeat(4,minmax(0,1fr))}}
-.tile{border:1px solid var(--line);border-radius:6px;padding:5px 8px;background:var(--panel);min-width:0}
-.tile .k{font-size:.68rem;color:var(--muted)}
-.tile .v{font-family:var(--f-num);font-size:1rem;font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.tile .s{font-size:.66rem;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tile{border:1px solid var(--line);border-radius:8px;padding:7px 10px;background:var(--panel);min-width:0}
+.tile .k{font-size:.76rem;color:var(--muted)}
+.tile .v{font-family:var(--f-num);font-size:1.15rem;font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tile .s{font-size:.74rem;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .tile.e .v{color:var(--ether)} .tile.g .v{color:var(--gold)}
 
 .progress{height:5px;background:var(--line);border-radius:3px;overflow:hidden;flex:1;min-width:60px;align-self:center}
 .progress i{display:block;height:100%;width:0;background:var(--ether);transition:width .1s}
-canvas.chart{width:100%;height:140px;display:block}
+canvas.chart{width:100%;height:150px;display:block}
 .chip{display:inline-block;font-size:.68rem;padding:0 7px;border-radius:99px;background:var(--gold-soft);color:var(--gold)}
-details.box summary{cursor:pointer;padding:6px 10px;font-size:.8rem;color:var(--muted)}
-details.box[open] summary{border-bottom:1px solid var(--line)}
+.story{background:var(--ether-soft);border-radius:8px;padding:9px 12px;font-size:.92rem;line-height:1.55}
+.story ul{margin:4px 0 0;padding-left:18px}
+.story b{font-family:var(--f-num)} .story .e{color:var(--ether)} .story .g{color:var(--gold);font-family:var(--f-num);font-size:.85rem;margin-left:4px}
+small.cnt{display:block;font-size:.72rem;color:var(--muted);font-weight:400;font-family:var(--f-body)}
+.boxHead{padding:7px 10px;font-size:.85rem;font-weight:700;border-bottom:1px solid var(--line)}
 .meter{position:relative;height:12px;background:var(--line);border-radius:3px;min-width:60px;overflow:hidden}
 .meter i{position:absolute;inset:0 auto 0 0;background:var(--ether);border-radius:3px}
 td.meter-cell{width:40%}
@@ -104,16 +108,16 @@ td.meter-cell{width:40%}
 .floatTxt.ok{color:var(--ok)} .floatTxt.bad{color:var(--muted);font-size:1.05rem}
 @keyframes floatUp{0%{opacity:0;transform:translate(-50%,8px) scale(.8)}20%{opacity:1;transform:translate(-50%,0) scale(1.1)}100%{opacity:0;transform:translate(-50%,-34px) scale(1)}}
 .lvlBig{font-family:var(--f-display);font-size:2.1rem;line-height:1;color:var(--ink);display:flex;align-items:baseline;gap:6px;transform-origin:left center}
-.lvlBig small{font-family:var(--f-body);font-size:.7rem;color:var(--muted)}
+.lvlBig small{font-family:var(--f-body);font-size:.8rem;color:var(--muted)}
 .lvlBig.bump{animation:bump .4s cubic-bezier(.3,1.8,.5,1)}
 @keyframes bump{0%{transform:scale(1)}40%{transform:scale(1.25);color:var(--ok)}100%{transform:scale(1)}}
-.mstats{display:grid;grid-template-columns:auto 1fr;gap:1px 10px;font-size:.8rem;align-items:baseline;margin-top:4px}
-.mstats span{color:var(--muted);font-size:.72rem}
-.mstats b{font-family:var(--f-num);font-weight:600;text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mstats{display:grid;grid-template-columns:auto 1fr;gap:2px 10px;font-size:.9rem;align-items:baseline;margin-top:4px}
+.mstats span{color:var(--muted);font-size:.8rem}
+.mstats b{font-family:var(--f-num);font-weight:700;text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .mstats .e{color:var(--ether)} .mstats .g{color:var(--gold)}
 .nextBar{height:5px;border-radius:3px;background:var(--line);overflow:hidden;margin-top:5px}
 .nextBar i{display:block;height:100%;background:linear-gradient(90deg,var(--ether),var(--gold));transition:width .25s}
-.log{font-family:var(--f-num);font-size:.74rem;padding:4px 8px}
+.log{font-family:var(--f-num);font-size:.82rem;padding:6px 10px;line-height:1.55}
 .log div{padding:1px 0}
 .log div:first-child{animation:logIn .25s ease-out}
 @keyframes logIn{from{opacity:0;transform:translateX(-8px)}to{opacity:1;transform:none}}
@@ -128,7 +132,7 @@ td.meter-cell{width:40%}
 .tryBtn.holding::after{animation:sheen .7s linear infinite}
 @keyframes sheen{to{transform:translateX(100%)}}
 .subRow{display:grid;grid-template-columns:1fr 1fr;gap:6px}
-.subRow button{font-size:.8rem;padding:6px}
+.subRow button{font-size:.88rem;padding:8px}
 #screenFlash{position:fixed;inset:0;pointer-events:none;z-index:40;opacity:0;background:radial-gradient(circle at 50% 35%,var(--fl,rgba(255,255,255,.5)) 0%,transparent 70%)}
 #screenFlash.go{animation:sflash .5s ease-out}
 @keyframes sflash{0%{opacity:1}100%{opacity:0}}
@@ -143,7 +147,7 @@ td.meter-cell{width:40%}
 .ms-body canvas{width:150px;height:150px}
 .ms-title{font-family:var(--f-display);font-weight:400;font-size:2.4rem;line-height:1;margin:0;text-shadow:0 2px 0 rgba(0,0,0,.25)}
 .ms-sub{font-size:.72rem;letter-spacing:.2em;color:var(--muted);margin:0}
-.ms-rows{display:grid;grid-template-columns:auto 1fr;gap:3px 14px;width:100%;font-size:.82rem;text-align:left;margin-top:4px}
+.ms-rows{display:grid;grid-template-columns:auto 1fr;gap:4px 14px;width:100%;font-size:.9rem;text-align:left;margin-top:4px}
 .ms-rows span{color:var(--muted)} .ms-rows b{font-family:var(--f-num);text-align:right;white-space:nowrap}
 .luck{font-weight:700;font-size:.82rem;padding:4px 10px;border-radius:99px;background:var(--gold-soft);color:var(--gold)}
 .luck.good{background:var(--ether-soft);color:var(--ether)}
@@ -160,7 +164,7 @@ dialog::backdrop{background:var(--scrim)}
 .dlg-head .row{align-items:center;gap:6px}
 .dlg-body{overflow:auto;min-height:0}
 .dlg-foot{display:flex;justify-content:space-between;gap:8px;padding:8px 12px;border-top:1px solid var(--line);flex-wrap:wrap;align-items:center}
-.edit td input{padding:3px 5px;border-radius:4px;font-family:var(--f-num);font-size:.8rem;text-align:right;width:76px}
+.edit td input{padding:4px 6px;border-radius:4px;font-family:var(--f-num);font-size:.9rem;text-align:right;width:76px}
 .edit tr.in td{background:var(--ether-soft)}
 .edit .x{display:none}
 .edit.full .x{display:table-cell}
@@ -170,8 +174,11 @@ dialog::backdrop{background:var(--scrim)}
 <body>
 <div class="app">
   <div class="top">
-    <h1>에테르 강화 시뮬레이터</h1>
-    <button id="openTbl" type="button">확률표·기댓값</button>
+    <h1>에테르 강화 시뮬</h1>
+    <div class="row" style="flex-wrap:nowrap;align-items:center;gap:6px">
+      <button id="themeBtn" type="button" aria-label="배경 바꾸기">다크</button>
+      <button id="openTbl" type="button">확률표</button>
+    </div>
   </div>
   <div class="inputs">
     <label class="f">시작 강<input type="number" id="start" min="0" max="29" value="0" inputmode="numeric"></label>
@@ -189,20 +196,24 @@ dialog::backdrop{background:var(--scrim)}
   <!-- 비용 시뮬 -->
   <section class="pane" role="tabpanel" id="pn-cost" aria-labelledby="tab-cost">
     <div class="row">
-      <label class="f" style="width:110px">반복 횟수
+      <label class="f" style="width:110px">반복 횟수(사람 수)
         <select id="runs">
-          <option value="50">50회</option>
-          <option value="100">100회</option>
-          <option value="500">500회</option>
-          <option value="1000">1,000회</option>
-          <option value="10000" selected>10,000회</option>
-          <option value="50000">50,000회</option>
-          <option value="100000">100,000회</option>
+          <option value="5">5명</option>
+          <option value="10">10명</option>
+          <option value="25">25명</option>
+          <option value="50">50명</option>
+          <option value="100">100명</option>
+          <option value="500">500명</option>
+          <option value="1000">1,000명</option>
+          <option value="10000" selected>10,000명</option>
+          <option value="50000">50,000명</option>
+          <option value="100000">100,000명</option>
         </select>
       </label>
       <button class="primary" id="simBtn" type="button">실행</button>
       <div class="progress"><i id="prog"></i></div>
     </div>
+    <p class="hint" id="runsHint"></p>
     <div id="simOut" style="display:flex;flex-direction:column;gap:8px"><p class="note">실행하면 시작 강 → 목표 강을 여러 번 반복한 결과가 나옵니다.</p></div>
   </section>
 
@@ -210,20 +221,23 @@ dialog::backdrop{background:var(--scrim)}
   <section class="pane" role="tabpanel" id="pn-own" aria-labelledby="tab-own" hidden>
     <div class="row">
       <label class="f" style="width:110px">보유 에테르(개)<input type="number" id="owned" min="0" step="1" value="10000" inputmode="numeric"></label>
-      <label class="f" style="width:96px">반복 횟수
+      <label class="f" style="width:110px">반복(사람 수)
         <select id="ownRuns">
-          <option value="50">50회</option>
-          <option value="100">100회</option>
-          <option value="500">500회</option>
-          <option value="1000">1,000회</option>
-          <option value="10000" selected>10,000회</option>
-          <option value="50000">50,000회</option>
-          <option value="100000">100,000회</option>
+          <option value="5">5명</option>
+          <option value="10">10명</option>
+          <option value="25">25명</option>
+          <option value="50">50명</option>
+          <option value="100">100명</option>
+          <option value="500">500명</option>
+          <option value="1000">1,000명</option>
+          <option value="10000" selected>10,000명</option>
+          <option value="50000">50,000명</option>
+          <option value="100000">100,000명</option>
         </select>
       </label>
       <button class="primary" id="ownBtn" type="button">계산</button>
-      <span class="hint" id="ownWorth" style="padding-bottom:6px"></span>
     </div>
+    <p class="hint" id="ownHint"></p>
     <div id="ownOut" style="display:flex;flex-direction:column;gap:8px;flex:1;min-height:0"></div>
   </section>
 
@@ -296,6 +310,11 @@ let P=[...DEF_P], C=[...DEF_C];
 try{const s=JSON.parse(localStorage.getItem(KEY)||'null');if(s&&s.P&&s.P.length===N&&s.C&&s.C.length===N){P=s.P;C=s.C;}}catch(e){}
 const save=()=>{try{localStorage.setItem(KEY,JSON.stringify({P,C}))}catch(e){}};
 const $=id=>document.getElementById(id);
+/* 배경 전환: 처음엔 폰 설정을 따르고, 누르면 라이트/다크 고정 */
+function curTheme(){const a=document.documentElement.dataset.theme;return a||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');}
+function applyTheme(t){if(t)document.documentElement.dataset.theme=t;$('themeBtn').textContent=curTheme()==='dark'?'라이트':'다크';
+  if(typeof showSim==='function'){showSim();}}
+try{const t=localStorage.getItem(KEY+'-theme');if(t==='dark'||t==='light')document.documentElement.dataset.theme=t;}catch(e){}
 
 /* 숫자 표시 */
 const nf=(x,d=0)=>isFinite(x)?x.toLocaleString('ko-KR',{maximumFractionDigits:d,minimumFractionDigits:0}):'∞';
@@ -372,10 +391,11 @@ function recalc(){
     if(i===t-1)theory={att:ca,eth:ce};
   }
   $('theoryTiles').innerHTML=`
-    <div><span>기대 시도 (${s}→${t}강)</span><b>${nf(theory.att,0)}회</b></div>
+    <div><span>기대 시도</span><b>${nf(theory.att,0)}회</b></div>
     <div class="e"><span>기대 에테르</span><b>${nf(theory.eth)}개</b></div>
     <div class="g"><span>기대 금액</span><b>${money(theory.eth*pr)}</b></div>`;
-  $('ownWorth').textContent=`가치 ${money(ownedN()*pr)} · ${s}강부터`;
+  $('runsHint').innerHTML=`반복 횟수 = 강화하는 사람 수 · 각자 목표 강까지 강화`;
+  $('ownHint').innerHTML=`보유 에테르 가치 ${money(ownedN()*pr)} · 에테르를 다 쓸 때까지 강화`;
   renderMan();
 }
 
@@ -409,22 +429,28 @@ function showSim(){
   const As=Float64Array.from(A).sort(), Es=Float64Array.from(E).sort();
   let sa=0,se=0; for(let i=0;i<R;i++){sa+=A[i];se+=E[i];}
   const ma=sa/R, me=se/R;
-  const rows=[['최소 (가장 운 좋음)',0],['상위 10% 행운',0.10],['중앙값',0.5],['상위 10% 불운',0.90],['상위 1% 불운',0.99],['최대 (가장 운 나쁨)',1]];
+  const rows=[['최소',0],['행운 10%',0.10],['중앙값',0.5],['불운 10%',0.90],['불운 1%',0.99],['최대',1]];
   const diff=theory.eth?((me-theory.eth)/theory.eth*100):0;
+  const half=Math.ceil(R/2), mx=As.length-1;
   $('simOut').innerHTML=`
+    <div class="story"><b>${nf(R)}명</b>이 각자 ${s}강 → ${t}강까지 강화하면
+      <ul>
+        <li>가장 운 좋은 사람: <b class="e">${nf(Es[0])}개</b> <span class="g">${money(Es[0]*pr)}</span></li>
+        <li>절반(${nf(half)}명)은 <b class="e">${nf(q(Es,.5))}개</b> 이하 <span class="g">${money(q(Es,.5)*pr)}</span></li>
+        <li>가장 운 나쁜 사람: <b class="e">${nf(Es[mx])}개</b> <span class="g">${money(Es[mx]*pr)}</span></li>
+      </ul></div>
     <div class="tiles">
       <div class="tile"><div class="k">평균 시도</div><div class="v">${nf(ma,1)}회</div><div class="s">이론 ${nf(theory.att,1)}회</div></div>
       <div class="tile e"><div class="k">평균 에테르</div><div class="v">${nf(me)}개</div><div class="s">이론과 ${diff>=0?'+':''}${nf(diff,2)}% 차이</div></div>
-      <div class="tile g"><div class="k">평균 금액</div><div class="v">${money(me*pr)}</div><div class="s">${nf(R)}번 반복 · ${s}강 → ${t}강</div></div>
+      <div class="tile g"><div class="k">평균 금액</div><div class="v">${money(me*pr)}</div><div class="s">${nf(R)}명 평균 · ${s}강 → ${t}강</div></div>
       <div class="tile"><div class="k">중앙값 에테르</div><div class="v">${nf(q(Es,.5))}개</div><div class="s">절반은 이보다 적게 듦</div></div>
     </div>
     <div class="box" style="padding:6px"><canvas class="chart" id="hist" aria-label="소모 에테르 분포 히스토그램"></canvas>
     <p class="note" style="padding:2px 4px 0">소모 에테르 분포 · <span class="chip">평균</span>·중앙값 선 · 상위 0.5% 생략</p></div>
-    <details class="box" id="pctBox"${pctOpen?' open':''}><summary>행운·불운 구간 보기 (상위 10%·1% 등)</summary><div style="overflow-x:auto"><table class="pct">
+    <div class="box"><div class="boxHead">행운·불운 구간 <span class="note" style="font-weight:400">· 등수는 ${nf(R)}명 중 에테르를 적게 쓴 순서</span></div><div style="overflow-x:auto"><table class="pct">
       <thead><tr><th>구간</th><th>시도</th><th>에테르</th><th>금액</th></tr></thead>
-      <tbody>${rows.map(([n,p])=>{const a=p===0?As[0]:q(As,p),e=p===0?Es[0]:q(Es,p);return `<tr><td>${n}</td><td class="num">${nf(a)}</td><td class="num e">${nf(e)}</td><td class="num g">${money(e*pr)}</td></tr>`}).join('')}</tbody>
-    </table></div></details>`;
-  $('pctBox').addEventListener('toggle',e=>pctOpen=e.target.open);
+      <tbody>${rows.map(([n,p])=>{const a=p===0?As[0]:q(As,p),e=p===0?Es[0]:q(Es,p);const rk=p===0?1:Math.max(1,Math.ceil(p*R));return `<tr><td>${n}<small class="cnt">${nf(R)}명 중 ${nf(rk)}등</small></td><td class="num">${nf(a)}</td><td class="num e">${nf(e)}</td><td class="num g">${money(e*pr)}</td></tr>`}).join('')}</tbody>
+    </table></div></div>`;
   drawHist(Es,me);
 }
 function drawHist(Es,mean){
@@ -482,20 +508,24 @@ function showOwn(){
   const rows=[];
   for(let l=s+1;l<=N;l++){const pr=ge[l]/R; if(pr<0.0005&&l>expLvl+1)break; if(pr>=0.9995&&ge[l+1]/R>=0.9995)continue; rows.push([l,pr]);}
   $('ownOut').innerHTML=`
+    <div class="story"><b>${nf(R)}명</b>이 각자 에테르 ${nf(B)}개로 ${s}강부터 강화하면
+      <ul>
+        <li>평균 <b class="e">${nf(mean,1)}강</b>까지 올라감</li>
+        <li>가장 높이 간 사람 <b>${sorted[sorted.length-1]}강</b> · 가장 낮은 사람 <b>${sorted[0]}강</b></li>
+        <li>평균 비용으로만 계산하면 <b>${expLvl}강</b></li>
+      </ul></div>
     <div class="tiles">
-      <div class="tile e"><div class="k">평균 도달</div><div class="v">${nf(mean,1)}강</div><div class="s">${s}강에서 에테르 ${nf(B)}개</div></div>
       <div class="tile"><div class="k">가장 흔한 결과</div><div class="v">${mode}강</div><div class="s">${nf(reach[mode]/R*100,1)}% 확률로 여기서 멈춤</div></div>
       <div class="tile"><div class="k">절반 확률로</div><div class="v">${med}강 이상</div><div class="s">하위 10% ${unlucky}강 · 상위 10% ${lucky}강</div></div>
-      <div class="tile g"><div class="k">기댓값 기준</div><div class="v">${expLvl}강</div><div class="s">평균 비용으로만 계산한 값</div></div>
     </div>
     <div class="box fill"><table class="pct">
       <thead><tr><th>도달 강</th><th>이상 도달</th><th></th><th>여기서 멈춤</th></tr></thead>
       <tbody>${rows.map(([l,pr])=>`<tr><td class="lvl" style="text-align:center">${l}강</td>
-        <td class="num">${pr>=0.9995?'100':nf(pr*100,pr<0.01?2:1)}%</td>
+        <td class="num">${pr>=0.9995?'100':nf(pr*100,pr<0.01?2:1)}%<small class="cnt">${nf(ge[l])}명</small></td>
         <td class="meter-cell"><div class="meter"><i style="width:${(pr*100).toFixed(2)}%"></i></div></td>
-        <td class="num m">${nf(reach[l]/R*100,reach[l]/R<0.01?2:1)}%</td></tr>`).join('')}</tbody>
+        <td class="num m">${nf(reach[l]/R*100,reach[l]/R<0.01?2:1)}%<small class="cnt">${nf(reach[l])}명</small></td></tr>`).join('')}</tbody>
     </table></div>
-    <p class="note">%는 확률입니다. <b>이상 도달</b>: 그 강 이상까지 올라갈 확률 · <b>여기서 멈춤</b>: 에테르가 떨어졌을 때 딱 그 강일 확률 · ${nf(R)}번 시행 · 남은 에테르 평균 ${nf(lastOwn.leftAvg)}개</p>`;
+    <p class="note">%는 확률, 아래 숫자는 ${nf(R)}명 중 사람 수입니다. <b>이상 도달</b>: 그 강 이상까지 간 사람 · <b>여기서 멈춤</b>: 에테르가 떨어졌을 때 딱 그 강인 사람 · 남은 에테르 평균 ${nf(lastOwn.leftAvg)}개</p>`;
 }
 
 /* 강화 단계별 아이템 그림 (어둠의 목걸이 — 직접 그린 그림) */
@@ -834,11 +864,14 @@ $('start').addEventListener('change',manReset);
 $('price').addEventListener('input',()=>{recalc();showSim();});
 $('owned').addEventListener('input',()=>{recalc();});
 $('owned').addEventListener('change',runOwn);
-$('ownRuns').addEventListener('change',runOwn);
+$('ownRuns').addEventListener('change',()=>{recalc();runOwn();});
+$('runs').addEventListener('change',recalc);
 $('simBtn').addEventListener('click',runSim);
 $('ownBtn').addEventListener('click',runOwn);
 let rt; window.addEventListener('resize',()=>{clearTimeout(rt);rt=setTimeout(showSim,150);});
 
+applyTheme();
+$('themeBtn').addEventListener('click',()=>{const t=curTheme()==='dark'?'light':'dark';applyTheme(t);try{localStorage.setItem(KEY+'-theme',t)}catch(e){}});
 buildTable(); manReset(); recalc(); runSim(); runOwn(); startItemLoop();
 try{const t=localStorage.getItem(KEY+'-tab');if(tabs.includes(t))showTab(t);}catch(e){}
 </script>
