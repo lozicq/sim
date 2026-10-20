@@ -1,0 +1,584 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}[hidden]{display:none!important}</style>
+<title>에테르 강화 시뮬레이터</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Do+Hyeon&family=Noto+Sans+KR:wght@400;500;700&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* 레이아웃: 폰 한 화면 고정 앱 — 상단(입력·요약) / 탭 / 탭 내용(내부 스크롤) / 직접 강화는 하단 버튼 고정 */
+:root{
+  --bg:#f3f1ec; --panel:#fffdf8; --ink:#1d2129; --muted:#666a72; --line:#ddd7cb;
+  --ether:#1f7a8c; --ether-soft:#d7ecef; --gold:#b07a12; --gold-soft:#f5e8c8;
+  --ok:#2e7d4f; --bar:#1f7a8c; --scrim:rgba(20,22,26,.45); --rose:#c0476b; --violet:#6d4fc2;
+  --f-display:"Do Hyeon","Noto Sans KR",system-ui,sans-serif;
+  --f-body:"Noto Sans KR",system-ui,-apple-system,sans-serif;
+  --f-num:"JetBrains Mono",ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#14171c; --panel:#1c2027; --ink:#e8e6e1; --muted:#9a9ea6; --line:#2e333c;
+  --ether:#5cc6d8; --ether-soft:#16343a; --gold:#e0b04a; --gold-soft:#3a2f17;
+  --ok:#5fc48a; --bar:#5cc6d8; --scrim:rgba(0,0,0,.6); --rose:#ef7f9f; --violet:#a58cf0; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#14171c; --panel:#1c2027; --ink:#e8e6e1; --muted:#9a9ea6; --line:#2e333c;
+  --ether:#5cc6d8; --ether-soft:#16343a; --gold:#e0b04a; --gold-soft:#3a2f17;
+  --ok:#5fc48a; --bar:#5cc6d8; --scrim:rgba(0,0,0,.6); --rose:#ef7f9f; --violet:#a58cf0; color-scheme:dark}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:14px;line-height:1.45;overflow:hidden;
+  padding-left:max(12px,env(safe-area-inset-left,0px));padding-right:max(12px,env(safe-area-inset-right,0px));padding-block:10px}
+.app{height:100%;max-width:760px;margin:0 auto;display:flex;flex-direction:column;gap:8px;min-height:0}
+.num{font-family:var(--f-num);font-variant-numeric:tabular-nums}
+input,select,button{font:inherit;color:var(--ink)}
+input[type=number],select{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:5px 7px;min-width:0;width:100%}
+input:focus-visible,select:focus-visible,button:focus-visible,summary:focus-visible{outline:2px solid var(--ether);outline-offset:1px}
+button{cursor:pointer;border-radius:6px;border:1px solid var(--line);background:var(--panel);padding:6px 10px}
+button.primary{background:var(--ether);border-color:var(--ether);color:var(--panel);font-weight:700}
+button.gold{background:var(--gold);border-color:var(--gold);color:var(--panel);font-weight:700}
+button:disabled{opacity:.5;cursor:default}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end}
+.note,.hint{font-size:.74rem;color:var(--muted);margin:0}
+
+/* 상단 */
+.top{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.top h1{font-family:var(--f-display);font-weight:400;font-size:1.35rem;margin:0;line-height:1.1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.top button{font-size:.8rem;padding:5px 9px;flex-shrink:0}
+.inputs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+label.f{display:flex;flex-direction:column;gap:2px;font-size:.7rem;color:var(--muted)}
+.summary{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+.summary div{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:4px 8px;min-width:0}
+.summary span{display:block;font-size:.66rem;color:var(--muted)}
+.summary b{display:block;font-family:var(--f-num);font-size:.86rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.summary .e b{color:var(--ether)} .summary .g b{color:var(--gold)}
+
+/* 탭 */
+.tabs{display:grid;grid-template-columns:repeat(3,1fr);border-bottom:1px solid var(--line)}
+.tabs button{border:none;border-bottom:3px solid transparent;border-radius:0;background:none;padding:7px 4px;
+  font-family:var(--f-display);font-size:1.05rem;color:var(--muted);white-space:nowrap}
+.tabs button[aria-selected="true"]{color:var(--ether);border-bottom-color:var(--ether)}
+.pane{flex:1;min-height:0;display:flex;flex-direction:column;gap:8px;overflow:auto}
+.pane[hidden]{display:none!important}
+.fill{flex:1;min-height:80px;overflow:auto}
+
+/* 표 */
+table{border-collapse:collapse;width:100%}
+th,td{padding:4px 6px;text-align:right;border-bottom:1px solid var(--line);white-space:nowrap}
+th{position:sticky;top:0;background:var(--panel);font-weight:500;font-size:.7rem;color:var(--muted);z-index:1}
+td:first-child,th:first-child{text-align:center}
+.lvl{font-family:var(--f-display);font-size:.95rem}
+td.g{color:var(--gold)} td.e{color:var(--ether)} td.m{color:var(--muted)}
+.pct td:first-child{text-align:left}
+.box{background:var(--panel);border:1px solid var(--line);border-radius:8px}
+
+/* 결과 칸 */
+.tiles{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
+@media (min-width:640px){.tiles{grid-template-columns:repeat(4,minmax(0,1fr))}}
+.tile{border:1px solid var(--line);border-radius:6px;padding:5px 8px;background:var(--panel);min-width:0}
+.tile .k{font-size:.68rem;color:var(--muted)}
+.tile .v{font-family:var(--f-num);font-size:1rem;font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tile .s{font-size:.66rem;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tile.e .v{color:var(--ether)} .tile.g .v{color:var(--gold)}
+
+.progress{height:5px;background:var(--line);border-radius:3px;overflow:hidden;flex:1;min-width:60px;align-self:center}
+.progress i{display:block;height:100%;width:0;background:var(--ether);transition:width .1s}
+canvas.chart{width:100%;height:140px;display:block}
+.chip{display:inline-block;font-size:.68rem;padding:0 7px;border-radius:99px;background:var(--gold-soft);color:var(--gold)}
+details.box summary{cursor:pointer;padding:6px 10px;font-size:.8rem;color:var(--muted)}
+details.box[open] summary{border-bottom:1px solid var(--line)}
+.meter{position:relative;height:12px;background:var(--line);border-radius:3px;min-width:60px;overflow:hidden}
+.meter i{position:absolute;inset:0 auto 0 0;background:var(--ether);border-radius:3px}
+td.meter-cell{width:40%}
+
+/* 직접 강화 */
+.forge{display:grid;grid-template-columns:auto minmax(0,1fr);gap:10px;align-items:center}
+.badge{--ring:var(--ether);width:84px;height:84px;border-radius:50%;display:grid;place-items:center;border:4px solid var(--ring);background:var(--ether-soft);transition:border-color .3s}
+.badge b{font-family:var(--f-display);font-weight:400;font-size:2rem;color:var(--ring);line-height:1;display:block;text-align:center}
+.badge span{display:block;font-size:.62rem;color:var(--muted);text-align:center}
+.badge.flash-ok{animation:ok .5s}
+@keyframes ok{0%{transform:scale(1)}40%{transform:scale(1.12)}100%{transform:scale(1)}}
+.mstats{display:grid;grid-template-columns:auto 1fr;gap:1px 10px;font-size:.8rem;align-items:baseline}
+.mstats span{color:var(--muted);font-size:.72rem}
+.mstats b{font-family:var(--f-num);font-weight:600;text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mstats .e{color:var(--ether)} .mstats .g{color:var(--gold)}
+.log{font-family:var(--f-num);font-size:.74rem;padding:4px 8px}
+.log div{padding:1px 0}
+.log .ok{color:var(--ok);font-weight:600} .log .bad{color:var(--muted)} .log .ms{color:var(--gold);font-weight:700}
+.dock{display:flex;flex-direction:column;gap:6px;padding-bottom:env(safe-area-inset-bottom,0px)}
+.tryRow{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.tryBtn{font-size:1.15rem;padding:13px 0;touch-action:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;font-family:var(--f-display);font-weight:400}
+.tryBtn.holding{filter:brightness(1.12);box-shadow:0 0 0 3px var(--gold-soft)}
+.subRow{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.subRow button{font-size:.8rem;padding:6px}
+
+/* 단계 돌파 이펙트 */
+#fx{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:50}
+#fxText{position:fixed;left:50%;top:42%;transform:translate(-50%,-50%) scale(.6);opacity:0;pointer-events:none;z-index:51;
+  font-family:var(--f-display);font-size:clamp(2.6rem,12vw,5.5rem);white-space:nowrap;text-align:center;line-height:1.05}
+#fxText small{display:block;font-size:.3em;font-family:var(--f-body);font-weight:700;letter-spacing:.2em;color:var(--muted)}
+#fxText.go{animation:pop 1.9s ease-out forwards}
+@keyframes pop{0%{opacity:0;transform:translate(-50%,-50%) scale(.5)}15%{opacity:1;transform:translate(-50%,-50%) scale(1.12)}
+  28%{transform:translate(-50%,-50%) scale(1)}75%{opacity:1}100%{opacity:0;transform:translate(-50%,-62%) scale(1)}}
+@media (prefers-reduced-motion:reduce){.badge.flash-ok{animation:none}#fxText.go{animation:fade 1.6s forwards}
+  @keyframes fade{0%,80%{opacity:1;transform:translate(-50%,-50%)}100%{opacity:0;transform:translate(-50%,-50%)}}}
+
+/* 확률표 팝업 */
+dialog{border:1px solid var(--line);border-radius:12px;background:var(--panel);color:var(--ink);padding:0;
+  width:min(860px,calc(100vw - 16px));max-width:none;max-height:calc(100% - 24px)}
+dialog::backdrop{background:var(--scrim)}
+.dlg{display:flex;flex-direction:column;max-height:calc(100vh - 30px)}
+.dlg-head{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:10px 12px;border-bottom:1px solid var(--line)}
+.dlg-head h2{font-family:var(--f-display);font-weight:400;font-size:1.2rem;margin:0}
+.dlg-head .row{align-items:center;gap:6px}
+.dlg-body{overflow:auto;min-height:0}
+.dlg-foot{display:flex;justify-content:space-between;gap:8px;padding:8px 12px;border-top:1px solid var(--line);flex-wrap:wrap;align-items:center}
+.edit td input{padding:3px 5px;border-radius:4px;font-family:var(--f-num);font-size:.8rem;text-align:right;width:76px}
+.edit tr.in td{background:var(--ether-soft)}
+.edit .x{display:none}
+.edit.full .x{display:table-cell}
+</style>
+
+</head>
+<body>
+<div class="app">
+  <div class="top">
+    <h1>에테르 강화 시뮬레이터</h1>
+    <button id="openTbl" type="button">확률표·기댓값</button>
+  </div>
+  <div class="inputs">
+    <label class="f">시작 강<input type="number" id="start" min="0" max="29" value="0" inputmode="numeric"></label>
+    <label class="f">목표 강<input type="number" id="target" min="1" max="30" value="15" inputmode="numeric"></label>
+    <label class="f">1개 시세(원)<input type="number" id="price" min="0" step="any" value="100" inputmode="decimal"></label>
+  </div>
+  <div class="summary" id="theoryTiles"></div>
+
+  <div class="tabs" role="tablist">
+    <button role="tab" id="tab-cost" aria-controls="pn-cost" aria-selected="true" type="button">비용 시뮬</button>
+    <button role="tab" id="tab-own" aria-controls="pn-own" aria-selected="false" type="button">보유 에테르</button>
+    <button role="tab" id="tab-man" aria-controls="pn-man" aria-selected="false" type="button">직접 강화</button>
+  </div>
+
+  <!-- 비용 시뮬 -->
+  <section class="pane" role="tabpanel" id="pn-cost" aria-labelledby="tab-cost">
+    <div class="row">
+      <label class="f" style="width:110px">반복 횟수
+        <select id="runs">
+          <option value="1000">1,000회</option>
+          <option value="10000" selected>10,000회</option>
+          <option value="50000">50,000회</option>
+          <option value="100000">100,000회</option>
+        </select>
+      </label>
+      <button class="primary" id="simBtn" type="button">실행</button>
+      <div class="progress"><i id="prog"></i></div>
+    </div>
+    <div id="simOut" style="display:flex;flex-direction:column;gap:8px"><p class="note">실행하면 시작 강 → 목표 강을 여러 번 반복한 결과가 나옵니다.</p></div>
+  </section>
+
+  <!-- 보유 에테르 -->
+  <section class="pane" role="tabpanel" id="pn-own" aria-labelledby="tab-own" hidden>
+    <div class="row">
+      <label class="f" style="width:130px">보유 에테르(개)<input type="number" id="owned" min="0" step="1" value="10000" inputmode="numeric"></label>
+      <button class="primary" id="ownBtn" type="button">계산</button>
+      <span class="hint" id="ownWorth" style="padding-bottom:6px"></span>
+    </div>
+    <div id="ownOut" style="display:flex;flex-direction:column;gap:8px;flex:1;min-height:0"></div>
+  </section>
+
+  <!-- 직접 강화 -->
+  <section class="pane" role="tabpanel" id="pn-man" aria-labelledby="tab-man" hidden style="overflow:hidden">
+    <div class="forge">
+      <div class="badge" id="badge"><div><b id="curLvl">0</b><span>현재 강</span></div></div>
+      <div class="mstats" id="manTiles"></div>
+    </div>
+    <div class="log box fill" id="log" aria-live="polite"></div>
+    <div class="dock">
+      <div class="tryRow">
+        <button class="gold tryBtn" data-n="1" type="button">1회</button>
+        <button class="gold tryBtn" data-n="10" type="button">10회</button>
+        <button class="gold tryBtn" data-n="100" type="button">100회</button>
+      </div>
+      <div class="subRow">
+        <button id="tryGoal" type="button">목표까지 한 번에</button>
+        <button id="manReset" type="button">처음부터</button>
+      </div>
+    </div>
+  </section>
+</div>
+
+<canvas id="fx" aria-hidden="true"></canvas>
+<div id="fxText" aria-live="assertive"></div>
+
+<dialog id="tblDlg" aria-labelledby="dlgTitle">
+  <div class="dlg">
+    <div class="dlg-head">
+      <h2 id="dlgTitle">확률표 · 기댓값</h2>
+      <div class="row">
+        <button id="fullTbl" type="button" aria-pressed="false">상세 보기</button>
+        <button id="closeTbl" type="button">닫기</button>
+      </div>
+    </div>
+    <div class="dlg-body">
+      <table class="edit" id="probTbl">
+        <thead><tr><th>목표</th><th>성공률%</th><th>시도당</th>
+          <th class="x">기대 시도</th><th>기대 에테르</th><th class="x">누적 시도</th><th class="x">누적 에테르</th><th>누적 금액</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+    <div class="dlg-foot">
+      <span class="hint">누적은 시작 강부터. 색칠된 행이 계산 구간입니다.</span>
+      <button id="resetTbl" type="button">기본값 복원</button>
+    </div>
+  </div>
+</dialog>
+
+<script>
+const DEF_P=[83.333,20.833,9.2593,5.2083,3.3333,2.1368,1.5699,1.2019,0.9497,0.7692,0.5903,0.496,0.4227,0.3644,0.3175,0.2604,0.2307,0.2058,0.1847,0.1667,0.1417,0.1291,0.1181,0.1085,0.1000,0.0870,0.0807,0.0750,0.0699,0.0654];
+const DEF_C=[10,10,10,10,10,20,20,20,20,20,30,30,30,30,30,30,30,30,30,30,40,40,40,40,40,40,40,40,40,40];
+const N=30, KEY='ether-sim-v2';
+let P=[...DEF_P], C=[...DEF_C];
+try{const s=JSON.parse(localStorage.getItem(KEY)||'null');if(s&&s.P&&s.P.length===N&&s.C&&s.C.length===N){P=s.P;C=s.C;}}catch(e){}
+const save=()=>{try{localStorage.setItem(KEY,JSON.stringify({P,C}))}catch(e){}};
+const $=id=>document.getElementById(id);
+
+/* 숫자 표시 */
+const nf=(x,d=0)=>isFinite(x)?x.toLocaleString('ko-KR',{maximumFractionDigits:d,minimumFractionDigits:0}):'∞';
+function money(x){
+  if(!isFinite(x))return '∞';
+  const m=Math.round(x/1e4);
+  if(m===0)return x>0?'1만원 미만':'0원';
+  const eok=Math.floor(m/1e4), man=m%1e4, parts=[];
+  if(eok)parts.push(eok.toLocaleString('ko-KR')+'억');
+  if(man)parts.push(man.toLocaleString('ko-KR')+'만');
+  return parts.join(' ')+'원';
+}
+const price=()=>Math.max(0,parseFloat($('price').value)||0);
+function range(){
+  let s=Math.max(0,Math.min(29,parseInt($('start').value)||0));
+  let t=Math.max(1,Math.min(30,parseInt($('target').value)||1));
+  if(t<=s)t=s+1;
+  return [s,t];
+}
+
+/* 탭 */
+const tabs=['cost','own','man'];
+function showTab(k){
+  tabs.forEach(t=>{$('tab-'+t).setAttribute('aria-selected',t===k);$('pn-'+t).hidden=t!==k;});
+  try{localStorage.setItem(KEY+'-tab',k)}catch(e){}
+  if(k==='cost')showSim(); if(k==='own')showOwn();
+}
+tabs.forEach(t=>$('tab-'+t).addEventListener('click',()=>showTab(t)));
+$('tab-cost').parentElement.addEventListener('keydown',e=>{
+  if(e.key!=='ArrowRight'&&e.key!=='ArrowLeft')return;
+  const cur=tabs.findIndex(t=>$('tab-'+t).getAttribute('aria-selected')==='true');
+  const n=tabs[(cur+(e.key==='ArrowRight'?1:2))%3]; showTab(n); $('tab-'+n).focus();
+});
+
+/* 확률표 팝업 */
+function buildTable(){
+  const tb=$('probTbl').tBodies[0]; tb.innerHTML='';
+  for(let i=0;i<N;i++){
+    const tr=document.createElement('tr');
+    tr.innerHTML=`<td class="lvl">${i+1}강</td>
+      <td><input type="number" id="p${i}" step="any" min="0" max="100" value="${P[i]}" aria-label="${i+1}강 성공률"></td>
+      <td><input type="number" id="c${i}" step="1" min="0" value="${C[i]}" aria-label="${i+1}강 시도당 에테르"></td>
+      <td class="num x" id="xa${i}"></td><td class="num e" id="xe${i}"></td>
+      <td class="num x" id="ca${i}"></td><td class="num e x" id="ce${i}"></td><td class="num g" id="cm${i}"></td>`;
+    tb.appendChild(tr);
+  }
+}
+$('probTbl').tBodies[0].addEventListener('input',e=>{
+  const m=e.target.id.match(/^([pc])(\d+)$/); if(!m)return;
+  const i=+m[2], v=e.target.value;
+  if(m[1]==='p')P[i]=Math.max(0,Math.min(100,parseFloat(v)||0));
+  else C[i]=Math.max(0,parseFloat(v)||0);
+  save(); recalc(); invalidate();
+});
+const dlg=$('tblDlg');
+$('fullTbl').addEventListener('click',e=>{const on=$('probTbl').classList.toggle('full');e.target.setAttribute('aria-pressed',on);e.target.textContent=on?'간단히':'상세 보기';});
+$('openTbl').addEventListener('click',()=>dlg.showModal());
+$('closeTbl').addEventListener('click',()=>dlg.close());
+dlg.addEventListener('click',e=>{if(e.target===dlg)dlg.close();});
+$('resetTbl').addEventListener('click',()=>{P=[...DEF_P];C=[...DEF_C];save();buildTable();recalc();invalidate();});
+
+/* 이론 기댓값 (실패 시 유지 → 단계마다 1/p) */
+function stageExp(i){const p=P[i]/100;return p>0?{att:1/p,eth:C[i]/p}:{att:Infinity,eth:Infinity};}
+let theory={att:0,eth:0};
+function recalc(){
+  const [s,t]=range(), pr=price();
+  let ca=0, ce=0;
+  for(let i=0;i<N;i++){
+    const e=stageExp(i);
+    $('xa'+i).textContent=nf(e.att,1); $('xe'+i).textContent=nf(e.eth);
+    if(i>=s){ca+=e.att;ce+=e.eth;$('ca'+i).textContent=nf(ca,1);$('ce'+i).textContent=nf(ce);$('cm'+i).textContent=money(ce*pr);}
+    else{['ca','ce','cm'].forEach(k=>$(k+i).textContent='-');}
+    $('xa'+i).parentElement.classList.toggle('in',i>=s&&i<t);
+    if(i===t-1)theory={att:ca,eth:ce};
+  }
+  $('theoryTiles').innerHTML=`
+    <div><span>기대 시도 (${s}→${t}강)</span><b>${nf(theory.att,0)}회</b></div>
+    <div class="e"><span>기대 에테르</span><b>${nf(theory.eth)}개</b></div>
+    <div class="g"><span>기대 금액</span><b>${money(theory.eth*pr)}</b></div>`;
+  $('ownWorth').textContent=`가치 ${money(ownedN()*pr)} · ${s}강부터`;
+  renderMan();
+}
+
+/* 몬테카를로 공통 */
+function geom(p){ if(p>=1)return 1; return Math.floor(Math.log(1-Math.random())/Math.log(1-p))+1; }
+function q(sorted,p){const idx=Math.min(sorted.length-1,Math.max(0,Math.ceil(p*sorted.length)-1));return sorted[idx];}
+function chunked(R,per,step,done,prog){
+  let i=0;(function go(){const end=Math.min(R,i+per);for(;i<end;i++)step(i);if(prog)prog(i/R);if(i<R)setTimeout(go,0);else done();})();
+}
+function invalidate(){
+  lastSim=null; lastOwn=null; $('prog').style.width='0';
+  $('simOut').innerHTML='<p class="note">확률표나 구간이 바뀌었습니다. 다시 실행해 주세요.</p>';
+  $('ownOut').innerHTML='<p class="note">확률표나 시작 강이 바뀌었습니다. 다시 계산해 주세요.</p>';
+}
+
+/* 1) 목표까지 비용 */
+let simming=false, lastSim=null, pctOpen=false;
+function runSim(){
+  if(simming)return;
+  const [s,t]=range(), R=+$('runs').value;
+  if(!isFinite(theory.att)){ $('simOut').innerHTML='<p class="note">성공률이 0%인 단계가 있어 목표에 도달할 수 없습니다.</p>'; return; }
+  simming=true; $('simBtn').disabled=true; $('simBtn').textContent='실행 중…';
+  const A=new Float64Array(R), E=new Float64Array(R);
+  chunked(R,Math.max(500,Math.floor(2e6/(t-s))),i=>{let a=0,e=0;for(let l=s;l<t;l++){const n=geom(P[l]/100);a+=n;e+=n*C[l];}A[i]=a;E[i]=e;},
+    ()=>{simming=false;$('simBtn').disabled=false;$('simBtn').textContent='실행';lastSim={A,E,s,t};showSim();},
+    f=>$('prog').style.width=(f*100)+'%');
+}
+function showSim(){
+  if(!lastSim||$('pn-cost').hidden)return;
+  const {A,E,s,t}=lastSim, pr=price(), R=A.length;
+  const As=Float64Array.from(A).sort(), Es=Float64Array.from(E).sort();
+  let sa=0,se=0; for(let i=0;i<R;i++){sa+=A[i];se+=E[i];}
+  const ma=sa/R, me=se/R;
+  const rows=[['최소 (가장 운 좋음)',0],['상위 10% 행운',0.10],['중앙값',0.5],['상위 10% 불운',0.90],['상위 1% 불운',0.99],['최대 (가장 운 나쁨)',1]];
+  const diff=theory.eth?((me-theory.eth)/theory.eth*100):0;
+  $('simOut').innerHTML=`
+    <div class="tiles">
+      <div class="tile"><div class="k">평균 시도</div><div class="v">${nf(ma,1)}회</div><div class="s">이론 ${nf(theory.att,1)}회</div></div>
+      <div class="tile e"><div class="k">평균 에테르</div><div class="v">${nf(me)}개</div><div class="s">이론과 ${diff>=0?'+':''}${nf(diff,2)}% 차이</div></div>
+      <div class="tile g"><div class="k">평균 금액</div><div class="v">${money(me*pr)}</div><div class="s">${nf(R)}번 반복 · ${s}강 → ${t}강</div></div>
+      <div class="tile"><div class="k">중앙값 에테르</div><div class="v">${nf(q(Es,.5))}개</div><div class="s">절반은 이보다 적게 듦</div></div>
+    </div>
+    <div class="box" style="padding:6px"><canvas class="chart" id="hist" aria-label="소모 에테르 분포 히스토그램"></canvas>
+    <p class="note" style="padding:2px 4px 0">소모 에테르 분포 · <span class="chip">평균</span>·중앙값 선 · 상위 0.5% 생략</p></div>
+    <details class="box" id="pctBox"${pctOpen?' open':''}><summary>행운·불운 구간 보기 (상위 10%·1% 등)</summary><div style="overflow-x:auto"><table class="pct">
+      <thead><tr><th>구간</th><th>시도</th><th>에테르</th><th>금액</th></tr></thead>
+      <tbody>${rows.map(([n,p])=>{const a=p===0?As[0]:q(As,p),e=p===0?Es[0]:q(Es,p);return `<tr><td>${n}</td><td class="num">${nf(a)}</td><td class="num e">${nf(e)}</td><td class="num g">${money(e*pr)}</td></tr>`}).join('')}</tbody>
+    </table></div></details>`;
+  $('pctBox').addEventListener('toggle',e=>pctOpen=e.target.open);
+  drawHist(Es,me);
+}
+function drawHist(Es,mean){
+  const cv=$('hist'); if(!cv)return;
+  const cs=getComputedStyle(document.documentElement), col=n=>cs.getPropertyValue(n).trim();
+  const dpr=window.devicePixelRatio||1, W=cv.clientWidth, H=cv.clientHeight; if(!W)return;
+  cv.width=W*dpr; cv.height=H*dpr; const g=cv.getContext('2d'); g.scale(dpr,dpr);
+  const lo=Es[0], hi=q(Es,.995), B=40, w=(hi-lo)/B||1, bins=Array(B).fill(0);
+  for(const v of Es){if(v>hi)break;bins[Math.min(B-1,Math.floor((v-lo)/w))]++;}
+  const mx=Math.max(...bins)||1, L=8, Rm=8, T=14, Bt=28, pw=W-L-Rm, ph=H-T-Bt;
+  g.font='11px '+col('--f-num'); g.strokeStyle=col('--line'); g.lineWidth=1;
+  for(let k=0;k<=4;k++){const y=T+ph*k/4;g.beginPath();g.moveTo(L,y);g.lineTo(L+pw,y);g.stroke();}
+  g.fillStyle=col('--bar');
+  bins.forEach((b,i)=>{const h=b/mx*ph;g.fillRect(L+pw*i/B+1,T+ph-h,Math.max(1,pw/B-2),h);});
+  const xOf=v=>L+(v-lo)/(hi-lo||1)*pw;
+  const line=(v,c,txt,dy=0)=>{if(v<lo||v>hi)return;const x=xOf(v);g.strokeStyle=c;g.lineWidth=2;g.beginPath();g.moveTo(x,T);g.lineTo(x,T+ph);g.stroke();g.fillStyle=c;const r=x>W-80;g.textAlign=r?'right':'left';g.fillText(txt,x+(r?-4:4),T+10+dy);};
+  line(mean,col('--gold'),'평균'); line(q(Es,.5),col('--ink'),'중앙값',14);
+  g.fillStyle=col('--muted');
+  [0,.25,.5,.75,1].forEach(f=>{const v=lo+(hi-lo)*f;g.textAlign=f===0?'left':f===1?'right':'center';g.fillText(nf(v)+(f===1?'개':''),L+pw*f,H-8);});
+}
+
+/* 2) 보유 에테르로 어디까지 */
+const ownedN=()=>Math.max(0,Math.floor(parseFloat($('owned').value)||0));
+let owning=false, lastOwn=null;
+function runOwn(){
+  if(owning)return;
+  const [s]=range(), B=ownedN(), R=+$('runs').value;
+  owning=true; $('ownBtn').disabled=true; $('ownBtn').textContent='계산 중…';
+  const reach=new Float64Array(N+1); const fin=new Uint8Array(R); let leftSum=0;
+  chunked(R,20000,i=>{
+    let l=s, rem=B;
+    while(l<N){
+      const p=P[l]/100, c=C[l]; if(p<=0||c>rem&&c>0)break;
+      if(c===0){l++;continue;}
+      const n=geom(p), cost=n*c;
+      if(cost<=rem){rem-=cost;l++;}else{rem-=Math.floor(rem/c)*c;break;}
+    }
+    fin[i]=l; leftSum+=rem;
+  },()=>{
+    for(let i=0;i<R;i++)reach[fin[i]]++;
+    owning=false; $('ownBtn').disabled=false; $('ownBtn').textContent='계산';
+    lastOwn={reach,R,s,B,fin,leftAvg:leftSum/R}; showOwn();
+  });
+}
+function showOwn(){
+  if(!lastOwn||$('pn-own').hidden)return;
+  const {reach,R,s,B,fin}=lastOwn;
+  // 이론 기준: 기대 에테르 누적이 보유량 이하인 최고 강
+  let acc=0, expLvl=s; for(let l=s;l<N;l++){acc+=stageExp(l).eth;if(acc<=B)expLvl=l+1;else break;}
+  const ge=Array(N+2).fill(0); for(let l=N;l>=0;l--)ge[l]=ge[l+1]+reach[l];
+  let mean=0; for(let l=0;l<=N;l++)mean+=l*reach[l]; mean/=R;
+  const sorted=Uint8Array.from(fin).sort();
+  const med=q(sorted,.5), lucky=q(sorted,.9), unlucky=q(sorted,.1);
+  let mode=s; for(let l=0;l<=N;l++)if(reach[l]>reach[mode])mode=l;
+  const rows=[];
+  for(let l=s+1;l<=N;l++){const pr=ge[l]/R; if(pr<0.0005&&l>expLvl+1)break; if(pr>=0.9995&&ge[l+1]/R>=0.9995)continue; rows.push([l,pr]);}
+  $('ownOut').innerHTML=`
+    <div class="tiles">
+      <div class="tile e"><div class="k">평균 도달</div><div class="v">${nf(mean,1)}강</div><div class="s">${s}강에서 에테르 ${nf(B)}개</div></div>
+      <div class="tile"><div class="k">가장 흔한 결과</div><div class="v">${mode}강</div><div class="s">${nf(reach[mode]/R*100,1)}% 확률로 여기서 멈춤</div></div>
+      <div class="tile"><div class="k">절반 확률로</div><div class="v">${med}강 이상</div><div class="s">하위 10% ${unlucky}강 · 상위 10% ${lucky}강</div></div>
+      <div class="tile g"><div class="k">기댓값 기준</div><div class="v">${expLvl}강</div><div class="s">평균 비용으로만 계산한 값</div></div>
+    </div>
+    <div class="box fill"><table class="pct">
+      <thead><tr><th>도달 강</th><th>이상 도달</th><th></th><th>여기서 멈춤</th></tr></thead>
+      <tbody>${rows.map(([l,pr])=>`<tr><td class="lvl" style="text-align:center">${l}강</td>
+        <td class="num">${pr>=0.9995?'100':nf(pr*100,pr<0.01?2:1)}%</td>
+        <td class="meter-cell"><div class="meter"><i style="width:${(pr*100).toFixed(2)}%"></i></div></td>
+        <td class="num m">${nf(reach[l]/R*100,reach[l]/R<0.01?2:1)}%</td></tr>`).join('')}</tbody>
+    </table></div>
+    <p class="note">${nf(R)}번 시행 · 시도당 에테르가 모자라면 멈춤 · 남은 에테르 평균 ${nf(lastOwn.leftAvg)}개</p>`;
+}
+
+/* 단계 돌파 이펙트 */
+const fxCv=$('fx'), fxCtx=fxCv.getContext('2d'), fxText=$('fxText');
+let parts=[], fxRaf=0;
+const reduce=matchMedia('(prefers-reduced-motion: reduce)');
+function tierColors(l){
+  const cs=getComputedStyle(document.documentElement), c=n=>cs.getPropertyValue(n).trim();
+  return l>=30?[c('--gold'),c('--rose'),c('--violet'),c('--ether'),c('--ok')]
+    :l>=25?[c('--violet'),c('--rose'),c('--gold')]
+    :l>=20?[c('--rose'),c('--gold')]
+    :l>=15?[c('--gold'),c('--ether')]
+    :l>=10?[c('--ether'),c('--gold')]:[c('--ether')];
+}
+function ringColor(l){const cs=getComputedStyle(document.documentElement),c=n=>cs.getPropertyValue(n).trim();
+  return l>=30?c('--gold'):l>=25?c('--violet'):l>=20?c('--rose'):l>=15?c('--gold'):c('--ether');}
+function milestone(l){
+  const cols=tierColors(l);
+  fxText.innerHTML=`${l}강 돌파!<small>${l>=30?'최대 강화 달성':'MILESTONE'}</small>`;
+  fxText.style.color=cols[0];
+  fxText.classList.remove('go'); void fxText.offsetWidth; fxText.classList.add('go');
+  if(reduce.matches)return;
+  const dpr=window.devicePixelRatio||1, W=innerWidth, H=innerHeight;
+  fxCv.width=W*dpr; fxCv.height=H*dpr; fxCtx.setTransform(dpr,0,0,dpr,0,0);
+  const count=40+l*8, cx=W/2, cy=H*.42, power=4+l/4;
+  for(let k=0;k<count;k++){
+    const a=Math.random()*Math.PI*2, v=power*(.4+Math.random());
+    parts.push({x:cx,y:cy,vx:Math.cos(a)*v,vy:Math.sin(a)*v-2,life:1,dec:.008+Math.random()*.012,
+      r:2+Math.random()*(2+l/10),c:cols[k%cols.length],rot:Math.random()*6,sq:Math.random()<.5});
+  }
+  if(l>=20){ // 큰 단계는 두 번 터짐
+    setTimeout(()=>{for(let k=0;k<count/2;k++){const a=Math.random()*Math.PI*2,v=power*.8*(.4+Math.random());
+      parts.push({x:cx+(Math.random()-.5)*W*.5,y:cy+(Math.random()-.5)*H*.3,vx:Math.cos(a)*v,vy:Math.sin(a)*v-2,life:1,dec:.01+Math.random()*.012,r:2+Math.random()*3,c:cols[k%cols.length],rot:0,sq:false});}},250);
+  }
+  if(!fxRaf)fxRaf=requestAnimationFrame(fxLoop);
+}
+function fxLoop(){
+  fxCtx.clearRect(0,0,innerWidth,innerHeight);
+  parts=parts.filter(p=>p.life>0);
+  for(const p of parts){
+    p.x+=p.vx;p.y+=p.vy;p.vy+=.12;p.vx*=.99;p.life-=p.dec;p.rot+=.2;
+    fxCtx.globalAlpha=Math.max(0,p.life);fxCtx.fillStyle=p.c;
+    if(p.sq){fxCtx.save();fxCtx.translate(p.x,p.y);fxCtx.rotate(p.rot);fxCtx.fillRect(-p.r,-p.r/2,p.r*2,p.r);fxCtx.restore();}
+    else{fxCtx.beginPath();fxCtx.arc(p.x,p.y,p.r,0,Math.PI*2);fxCtx.fill();}
+  }
+  fxCtx.globalAlpha=1;
+  fxRaf=parts.length?requestAnimationFrame(fxLoop):0;
+  if(!fxRaf)fxCtx.clearRect(0,0,innerWidth,innerHeight);
+}
+
+/* 직접 강화 */
+let man={lvl:0,att:0,eth:0,ok:0};
+const logEl=$('log');
+function manReset(){stopHold();const [s]=range();man={lvl:s,att:0,eth:0,ok:0};logEl.innerHTML='';addLog('bad','버튼을 꾹 누르면 계속 강화합니다. 목표 강에서 멈춥니다.');renderMan();}
+function addLog(cls,txt){
+  const d=document.createElement('div'); d.className=cls; d.textContent=txt;
+  logEl.prepend(d); while(logEl.children.length>400)logEl.lastChild.remove();
+}
+// n회 강화. stopAt에 도달하면 중간에 멈춤. 반환: 계속 가능 여부
+function runBatch(n,stopAt){
+  let best=0;
+  for(let k=0;k<n;k++){
+    if(man.lvl>=N||man.lvl>=stopAt)break;
+    const from=man.lvl; man.att++; man.eth+=C[from];
+    const ok=Math.random()<P[from]/100;
+    if(ok){man.lvl++;man.ok++;if(man.lvl%5===0)best=man.lvl;}
+    addLog(ok?'ok':'bad',`#${nf(man.att)}  ${from}→${from+1}강 ${ok?'성공':'실패'}  누적 ${nf(man.eth)}개`);
+    if(ok&&man.lvl%5===0)addLog('ms',`★ ${man.lvl}강 돌파 · ${nf(man.att)}회째`);
+  }
+  if(best){milestone(best);flash();}
+  else if(man.ok&&logEl.firstChild&&logEl.firstChild.className==='ok')flash();
+  renderMan();
+  return man.lvl<N&&man.lvl<stopAt;
+}
+function flash(){const b=$('badge');b.classList.remove('flash-ok');void b.offsetWidth;b.classList.add('flash-ok');}
+function renderMan(){
+  const [,t]=range(), pr=price(), done=man.lvl>=N;
+  $('curLvl').textContent=man.lvl;
+  $('badge').style.setProperty('--ring',ringColor(man.lvl));
+  $('manTiles').innerHTML=`
+    <span>누적 시도</span><b>${nf(man.att)}회 · 성공 ${nf(man.ok)}</b>
+    <span>누적 에테르</span><b class="e">${nf(man.eth)}개</b>
+    <span>누적 금액</span><b class="g">${money(man.eth*pr)}</b>
+    <span>다음 시도</span><b>${done?'최대 강화':P[man.lvl]+'% · '+C[man.lvl]+'개'}</b>`;
+  document.querySelectorAll('.tryBtn').forEach(b=>b.disabled=done);
+  $('tryGoal').disabled=man.lvl>=t;
+}
+
+/* 꾹 누르기: 누르면 n회, 0.4초 뒤부터 반복 */
+let holdTimer=null, holdBtn=null, holdStop=N;
+function startHold(btn){
+  if(holdBtn||btn.disabled)return;
+  const [,t]=range(); holdStop=man.lvl<t?t:N;   // 목표 전이면 목표에서 멈추고, 이미 넘었으면 30강까지
+  holdBtn=btn; btn.classList.add('holding');
+  const n=+btn.dataset.n;
+  if(!runBatch(n,holdStop)){stopHold();return;}
+  const start=performance.now();
+  const tick=()=>{ if(!holdBtn)return;
+    if(!runBatch(n,holdStop)){stopHold();return;}
+    holdTimer=setTimeout(tick,Math.max(40,160-(performance.now()-start)/15));
+  };
+  holdTimer=setTimeout(tick,400);
+}
+function stopHold(){clearTimeout(holdTimer);if(holdBtn)holdBtn.classList.remove('holding');holdBtn=null;}
+document.querySelectorAll('.tryBtn').forEach(b=>{
+  b.addEventListener('pointerdown',e=>{if(e.button!==0)return;e.preventDefault();b.setPointerCapture?.(e.pointerId);startHold(b);});
+  ['pointerup','pointercancel','lostpointercapture'].forEach(ev=>b.addEventListener(ev,stopHold));
+  b.addEventListener('contextmenu',e=>e.preventDefault());
+  b.addEventListener('keydown',e=>{if((e.key===' '||e.key==='Enter')&&!e.repeat){e.preventDefault();startHold(b);}});
+  b.addEventListener('keyup',e=>{if(e.key===' '||e.key==='Enter')stopHold();});
+});
+window.addEventListener('blur',stopHold);
+
+$('tryGoal').addEventListener('click',()=>{
+  stopHold(); const [,t]=range(); let best=0, guard=0;
+  while(man.lvl<t&&man.lvl<N&&guard<5e7){
+    const from=man.lvl; man.att++; man.eth+=C[from]; guard++;
+    if(Math.random()<P[from]/100){man.lvl++;man.ok++;addLog('ok',`#${nf(man.att)}  ${from}→${from+1}강 성공  누적 ${nf(man.eth)}개`);
+      if(man.lvl%5===0){best=man.lvl;addLog('ms',`★ ${man.lvl}강 돌파 · ${nf(man.att)}회째`);}}
+  }
+  addLog('bad',`── 목표 ${t}강 도달 · 총 ${nf(man.att)}회 ──`);
+  if(best)milestone(best); flash(); renderMan();
+});
+$('manReset').addEventListener('click',manReset);
+
+/* 공통 입력 */
+$('start').addEventListener('input',()=>{recalc();invalidate();});
+$('target').addEventListener('input',()=>{recalc();lastSim=null;$('prog').style.width='0';$('simOut').innerHTML='<p class="note">목표 강이 바뀌었습니다. 다시 실행해 주세요.</p>';});
+$('start').addEventListener('change',manReset);
+$('price').addEventListener('input',()=>{recalc();showSim();});
+$('owned').addEventListener('input',()=>{recalc();});
+$('owned').addEventListener('change',runOwn);
+$('simBtn').addEventListener('click',runSim);
+$('ownBtn').addEventListener('click',runOwn);
+let rt; window.addEventListener('resize',()=>{clearTimeout(rt);rt=setTimeout(showSim,150);});
+
+buildTable(); manReset(); recalc(); runSim(); runOwn();
+try{const t=localStorage.getItem(KEY+'-tab');if(tabs.includes(t))showTab(t);}catch(e){}
+</script>
+</body>
+</html>
