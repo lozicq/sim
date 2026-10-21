@@ -27,9 +27,10 @@
   --ok:#5fc48a; --bar:#5cc6d8; --scrim:rgba(0,0,0,.6); --rose:#ef7f9f; --violet:#a58cf0; color-scheme:dark}
 *{box-sizing:border-box}
 html,body{height:100%}
-body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.5;overflow:hidden;
+html{overflow:hidden}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.5;overflow:hidden;
   padding-left:max(12px,env(safe-area-inset-left,0px));padding-right:max(12px,env(safe-area-inset-right,0px));padding-block:10px}
-.app{height:100%;max-width:760px;margin:0 auto;display:flex;flex-direction:column;gap:8px;min-height:0}
+.app{height:100%;max-width:760px;margin:0 auto;display:flex;flex-direction:column;gap:6px;min-height:0}
 .num{font-family:var(--f-num);font-variant-numeric:tabular-nums}
 input,select,button{font:inherit;color:var(--ink)}
 input[type=number],select{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:5px 7px;min-width:0;width:100%}
@@ -49,14 +50,14 @@ button:disabled{opacity:.5;cursor:default}
 .inputs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
 label.f{display:flex;flex-direction:column;gap:2px;font-size:.78rem;font-weight:500;color:var(--muted)}
 .summary{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
-.summary div{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:6px 9px;min-width:0}
+.summary div{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:3px 9px;min-width:0}
 .summary span{display:block;font-size:.74rem;color:var(--muted)}
 .summary b{display:block;font-family:var(--f-num);font-size:1rem;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .summary .e b{color:var(--ether)} .summary .g b{color:var(--gold)}
 
 /* 탭 */
 .tabs{display:grid;grid-template-columns:repeat(3,1fr);border-bottom:1px solid var(--line)}
-.tabs button{border:none;border-bottom:3px solid transparent;border-radius:0;background:none;padding:7px 4px;
+.tabs button{border:none;border-bottom:3px solid transparent;border-radius:0;background:none;padding:5px 4px;
   font-family:var(--f-display);font-size:1.15rem;color:var(--muted);white-space:nowrap}
 .tabs button[aria-selected="true"]{color:var(--ether);border-bottom-color:var(--ether)}
 .pane{flex:1;min-height:0;display:flex;flex-direction:column;gap:8px;overflow:auto}
@@ -84,13 +85,24 @@ td.g{color:var(--gold)} td.e{color:var(--ether)} td.m{color:var(--muted)}
 
 .progress{height:5px;background:var(--line);border-radius:3px;overflow:hidden;flex:1;min-width:60px;align-self:center}
 .progress i{display:block;height:100%;width:0;background:var(--ether);transition:width .1s}
-canvas.chart{width:100%;height:150px;display:block}
+canvas.chart{width:100%;height:120px;display:block}
 .chip{display:inline-block;font-size:.68rem;padding:0 7px;border-radius:99px;background:var(--gold-soft);color:var(--gold)}
-.story{background:var(--ether-soft);border-radius:8px;padding:9px 12px;font-size:.92rem;line-height:1.55}
+.story{background:var(--ether-soft);border-radius:8px;padding:7px 11px;font-size:.88rem;line-height:1.5}
 .story ul{margin:4px 0 0;padding-left:18px}
 .story b{font-family:var(--f-num)} .story .e{color:var(--ether)} .story .g{color:var(--gold);font-family:var(--f-num);font-size:.85rem;margin-left:4px}
 small.cnt{display:block;font-size:.72rem;color:var(--muted);font-weight:400;font-family:var(--f-body)}
-.boxHead{padding:7px 10px;font-size:.85rem;font-weight:700;border-bottom:1px solid var(--line)}
+.boxHead{padding:6px 10px;font-size:.86rem;font-weight:500;border-bottom:1px solid var(--line)}
+.strip{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+.strip div{border:1px solid var(--line);border-radius:8px;padding:3px 9px;background:var(--panel);min-width:0}
+.strip span{display:block;font-size:.74rem;color:var(--muted)}
+.strip b{display:block;font-family:var(--f-num);font-size:1rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.strip .e b{color:var(--ether)} .strip .g b{color:var(--gold)}
+table.ppl td,table.ppl th{padding:4px 8px}
+table.ppl td:first-child{text-align:left}
+table.ppl small{font-size:.72rem;color:var(--muted);font-family:var(--f-body)}
+table.ppl{font-size:.9rem}
+@media (max-width:480px){table.ppl .meter-cell{display:none} table.ppl td,table.ppl th{padding:3px 6px}}
+table.ppl .lvl{font-size:.95rem}
 .meter{position:relative;height:12px;background:var(--line);border-radius:3px;min-width:60px;overflow:hidden}
 .meter i{position:absolute;inset:0 auto 0 0;background:var(--ether);border-radius:3px}
 td.meter-cell{width:40%}
@@ -213,7 +225,7 @@ dialog::backdrop{background:var(--scrim)}
       <button class="primary" id="simBtn" type="button">실행</button>
       <div class="progress"><i id="prog"></i></div>
     </div>
-    <p class="hint" id="runsHint"></p>
+    <p class="hint" id="runsHint" hidden></p>
     <div id="simOut" style="display:flex;flex-direction:column;gap:8px"><p class="note">실행하면 시작 강 → 목표 강을 여러 번 반복한 결과가 나옵니다.</p></div>
   </section>
 
@@ -237,7 +249,7 @@ dialog::backdrop{background:var(--scrim)}
       </label>
       <button class="primary" id="ownBtn" type="button">계산</button>
     </div>
-    <p class="hint" id="ownHint"></p>
+    <p class="hint" id="ownHint" hidden></p>
     <div id="ownOut" style="display:flex;flex-direction:column;gap:8px;flex:1;min-height:0"></div>
   </section>
 
@@ -314,6 +326,7 @@ const $=id=>document.getElementById(id);
 function curTheme(){const a=document.documentElement.dataset.theme;return a||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');}
 function applyTheme(t){if(t)document.documentElement.dataset.theme=t;$('themeBtn').textContent=curTheme()==='dark'?'라이트':'다크';
   if(typeof showSim==='function'){showSim();}}
+document.documentElement.dataset.theme='dark';
 try{const t=localStorage.getItem(KEY+'-theme');if(t==='dark'||t==='light')document.documentElement.dataset.theme=t;}catch(e){}
 
 /* 숫자 표시 */
@@ -394,7 +407,7 @@ function recalc(){
     <div><span>기대 시도</span><b>${nf(theory.att,0)}회</b></div>
     <div class="e"><span>기대 에테르</span><b>${nf(theory.eth)}개</b></div>
     <div class="g"><span>기대 금액</span><b>${money(theory.eth*pr)}</b></div>`;
-  $('runsHint').innerHTML=`반복 횟수 = 강화하는 사람 수 · 각자 목표 강까지 강화`;
+  $('runsHint').innerHTML='';
   $('ownHint').innerHTML=`보유 에테르 가치 ${money(ownedN()*pr)} · 에테르를 다 쓸 때까지 강화`;
   renderMan();
 }
@@ -429,28 +442,19 @@ function showSim(){
   const As=Float64Array.from(A).sort(), Es=Float64Array.from(E).sort();
   let sa=0,se=0; for(let i=0;i<R;i++){sa+=A[i];se+=E[i];}
   const ma=sa/R, me=se/R;
-  const rows=[['최소',0],['행운 10%',0.10],['중앙값',0.5],['불운 10%',0.90],['불운 1%',0.99],['최대',1]];
-  const diff=theory.eth?((me-theory.eth)/theory.eth*100):0;
-  const half=Math.ceil(R/2), mx=As.length-1;
+  const rows=[['최고 행운',0],['행운 10%',0.10],['중앙값',0.5],['불운 10%',0.90],['불운 1%',0.99],['최악 불운',1]];
   $('simOut').innerHTML=`
-    <div class="story"><b>${nf(R)}명</b>이 각자 ${s}강 → ${t}강까지 강화하면
-      <ul>
-        <li>가장 운 좋은 사람: <b class="e">${nf(Es[0])}개</b> <span class="g">${money(Es[0]*pr)}</span></li>
-        <li>절반(${nf(half)}명)은 <b class="e">${nf(q(Es,.5))}개</b> 이하 <span class="g">${money(q(Es,.5)*pr)}</span></li>
-        <li>가장 운 나쁜 사람: <b class="e">${nf(Es[mx])}개</b> <span class="g">${money(Es[mx]*pr)}</span></li>
-      </ul></div>
-    <div class="tiles">
-      <div class="tile"><div class="k">평균 시도</div><div class="v">${nf(ma,1)}회</div><div class="s">이론 ${nf(theory.att,1)}회</div></div>
-      <div class="tile e"><div class="k">평균 에테르</div><div class="v">${nf(me)}개</div><div class="s">이론과 ${diff>=0?'+':''}${nf(diff,2)}% 차이</div></div>
-      <div class="tile g"><div class="k">평균 금액</div><div class="v">${money(me*pr)}</div><div class="s">${nf(R)}명 평균 · ${s}강 → ${t}강</div></div>
-      <div class="tile"><div class="k">중앙값 에테르</div><div class="v">${nf(q(Es,.5))}개</div><div class="s">절반은 이보다 적게 듦</div></div>
+    <div class="strip">
+      <div><span>평균 시도</span><b>${nf(ma,0)}회</b></div>
+      <div class="e"><span>평균 에테르</span><b>${nf(me)}개</b></div>
+      <div class="g"><span>평균 금액</span><b>${money(me*pr)}</b></div>
     </div>
-    <div class="box" style="padding:6px"><canvas class="chart" id="hist" aria-label="소모 에테르 분포 히스토그램"></canvas>
-    <p class="note" style="padding:2px 4px 0">소모 에테르 분포 · <span class="chip">평균</span>·중앙값 선 · 상위 0.5% 생략</p></div>
-    <div class="box"><div class="boxHead">행운·불운 구간 <span class="note" style="font-weight:400">· 등수는 ${nf(R)}명 중 에테르를 적게 쓴 순서</span></div><div style="overflow-x:auto"><table class="pct">
-      <thead><tr><th>구간</th><th>시도</th><th>에테르</th><th>금액</th></tr></thead>
-      <tbody>${rows.map(([n,p])=>{const a=p===0?As[0]:q(As,p),e=p===0?Es[0]:q(Es,p);const rk=p===0?1:Math.max(1,Math.ceil(p*R));return `<tr><td>${n}<small class="cnt">${nf(R)}명 중 ${nf(rk)}등</small></td><td class="num">${nf(a)}</td><td class="num e">${nf(e)}</td><td class="num g">${money(e*pr)}</td></tr>`}).join('')}</tbody>
-    </table></div></div>`;
+    <div class="box" style="padding:4px 6px 2px"><canvas class="chart" id="hist" aria-label="소모 에테르 분포 히스토그램"></canvas></div>
+    <div class="box"><div class="boxHead"><b>${nf(R)}명</b>이 각자 ${s}강 → ${t}강까지 강화하면 <span class="note" style="font-weight:400">· 등수는 적게 쓴 순</span></div><table class="pct ppl">
+      <thead><tr><th>구간</th><th>에테르</th><th>금액</th></tr></thead>
+      <tbody>${rows.map(([n,p])=>{const rk=p===0?1:p===1?R:Math.max(1,Math.ceil(p*R));const e=p===0?Es[0]:p===1?Es[R-1]:q(Es,p);
+        return `<tr><td>${n} <small>${nf(rk)}등</small></td><td class="num e">${nf(e)}</td><td class="num g">${money(e*pr)}</td></tr>`}).join('')}</tbody>
+    </table></div>`;
   drawHist(Es,me);
 }
 function drawHist(Es,mean){
@@ -506,26 +510,17 @@ function showOwn(){
   const med=q(sorted,.5), lucky=q(sorted,.9), unlucky=q(sorted,.1);
   let mode=s; for(let l=0;l<=N;l++)if(reach[l]>reach[mode])mode=l;
   const rows=[];
-  for(let l=s+1;l<=N;l++){const pr=ge[l]/R; if(pr<0.0005&&l>expLvl+1)break; if(pr>=0.9995&&ge[l+1]/R>=0.9995)continue; rows.push([l,pr]);}
+  for(let l=s+1;l<=N;l++){const pr=ge[l]/R; if(pr<0.003&&l>expLvl+1)break; if(pr>=0.9995&&ge[l+1]/R>=0.9995)continue; rows.push([l,pr]);}
   $('ownOut').innerHTML=`
-    <div class="story"><b>${nf(R)}명</b>이 각자 에테르 ${nf(B)}개로 ${s}강부터 강화하면
-      <ul>
-        <li>평균 <b class="e">${nf(mean,1)}강</b>까지 올라감</li>
-        <li>가장 높이 간 사람 <b>${sorted[sorted.length-1]}강</b> · 가장 낮은 사람 <b>${sorted[0]}강</b></li>
-        <li>평균 비용으로만 계산하면 <b>${expLvl}강</b></li>
-      </ul></div>
-    <div class="tiles">
-      <div class="tile"><div class="k">가장 흔한 결과</div><div class="v">${mode}강</div><div class="s">${nf(reach[mode]/R*100,1)}% 확률로 여기서 멈춤</div></div>
-      <div class="tile"><div class="k">절반 확률로</div><div class="v">${med}강 이상</div><div class="s">하위 10% ${unlucky}강 · 상위 10% ${lucky}강</div></div>
-    </div>
-    <div class="box fill"><table class="pct">
-      <thead><tr><th>도달 강</th><th>이상 도달</th><th></th><th>여기서 멈춤</th></tr></thead>
+    <div class="story"><b>${nf(R)}명</b>이 각자 ${nf(B)}개(${money(B*price())})로 ${s}강부터 강화하면<br>
+      평균 <b class="e">${nf(mean,1)}강</b> · 절반은 <b>${med}강↑</b> · 최고 <b>${sorted[sorted.length-1]}강</b> · 최저 <b>${sorted[0]}강</b></div>
+    <div class="box fill"><table class="pct ppl">
+      <thead><tr><th>강</th><th>이상 도달</th><th class="meter-cell"></th><th>여기서 멈춤</th></tr></thead>
       <tbody>${rows.map(([l,pr])=>`<tr><td class="lvl" style="text-align:center">${l}강</td>
-        <td class="num">${pr>=0.9995?'100':nf(pr*100,pr<0.01?2:1)}%<small class="cnt">${nf(ge[l])}명</small></td>
+        <td class="num">${pr>=0.9995?'100':nf(pr*100,pr<0.01?2:1)}% <small>${nf(ge[l])}명</small></td>
         <td class="meter-cell"><div class="meter"><i style="width:${(pr*100).toFixed(2)}%"></i></div></td>
-        <td class="num m">${nf(reach[l]/R*100,reach[l]/R<0.01?2:1)}%<small class="cnt">${nf(reach[l])}명</small></td></tr>`).join('')}</tbody>
-    </table></div>
-    <p class="note">%는 확률, 아래 숫자는 ${nf(R)}명 중 사람 수입니다. <b>이상 도달</b>: 그 강 이상까지 간 사람 · <b>여기서 멈춤</b>: 에테르가 떨어졌을 때 딱 그 강인 사람 · 남은 에테르 평균 ${nf(lastOwn.leftAvg)}개</p>`;
+        <td class="num m">${nf(reach[l]/R*100,reach[l]/R<0.01?2:1)}% <small>${nf(reach[l])}명</small></td></tr>`).join('')}</tbody>
+    </table></div>`;
 }
 
 /* 강화 단계별 아이템 그림 (어둠의 목걸이 — 직접 그린 그림) */
