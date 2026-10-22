@@ -33,10 +33,14 @@ body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--f-body);fo
 .app{height:100%;max-width:760px;margin:0 auto;display:flex;flex-direction:column;gap:6px;min-height:0}
 .num{font-family:var(--f-num);font-variant-numeric:tabular-nums}
 input,select,button{font:inherit;color:var(--ink)}
-input[type=number],select{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:5px 7px;min-width:0;width:100%}
+input[type=number],select{background:var(--panel);border:1.5px solid var(--muted);border-radius:7px;padding:5px 7px;min-width:0;width:100%;font-weight:600}
+input[type=number]:focus,select:focus{border-color:var(--ether)}
+input[type=number]{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%238a8f98' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 20h9'/%3E%3Cpath d='M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 7px center;background-size:14px;padding-right:26px}
 input:focus-visible,select:focus-visible,button:focus-visible,summary:focus-visible{outline:2px solid var(--ether);outline-offset:1px}
-button{cursor:pointer;border-radius:6px;border:1px solid var(--line);background:var(--panel);padding:6px 10px}
-button.primary{background:var(--ether);border-color:var(--ether);color:var(--panel);font-weight:700}
+button{cursor:pointer;border-radius:8px;border:1.5px solid var(--ether);background:var(--ether-soft);color:var(--ether);padding:6px 11px;font-weight:700;
+  box-shadow:0 2px 0 var(--line);transition:transform .08s,box-shadow .08s}
+button:active:not(:disabled){transform:translateY(2px);box-shadow:none}
+button.primary{background:var(--ether);border-color:var(--ether);color:var(--panel);font-weight:700;padding-inline:16px}
 button.gold{background:var(--gold);border-color:var(--gold);color:var(--panel);font-weight:700}
 button:disabled{opacity:.5;cursor:default}
 .row{display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end}
@@ -50,16 +54,19 @@ button:disabled{opacity:.5;cursor:default}
 .inputs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
 label.f{display:flex;flex-direction:column;gap:2px;font-size:.78rem;font-weight:500;color:var(--muted)}
 .summary{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
-.summary div{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:3px 9px;min-width:0}
+.summary div{background:var(--panel);border:none;border-radius:8px;padding:3px 9px;min-width:0}
 .summary span{display:block;font-size:.74rem;color:var(--muted)}
 .summary b{display:block;font-family:var(--f-num);font-size:1rem;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .summary .e b{color:var(--ether)} .summary .g b{color:var(--gold)}
 
 /* 탭 */
-.tabs{display:grid;grid-template-columns:repeat(3,1fr);border-bottom:1px solid var(--line)}
-.tabs button{border:none;border-bottom:3px solid transparent;border-radius:0;background:none;padding:5px 4px;
-  font-family:var(--f-display);font-size:1.15rem;color:var(--muted);white-space:nowrap}
-.tabs button[aria-selected="true"]{color:var(--ether);border-bottom-color:var(--ether)}
+.tabs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+.tabs button{border:1.5px solid var(--ether);border-radius:10px;background:var(--panel);padding:4px 4px 5px;color:var(--ether);
+  display:flex;flex-direction:column;align-items:center;line-height:1.15;min-width:0;box-shadow:0 2px 0 var(--line)}
+.tabs button b{font-family:var(--f-display);font-weight:400;font-size:1.12rem;white-space:nowrap}
+.tabs button small{font-size:.68rem;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.tabs button[aria-selected="true"]{background:var(--ether);color:var(--panel);box-shadow:none;transform:translateY(1px)}
+.tabs button[aria-selected="true"] small{color:var(--panel);opacity:.85}
 .pane{flex:1;min-height:0;display:flex;flex-direction:column;gap:8px;overflow:auto}
 .pane[hidden]{display:none!important}
 .fill{flex:1;min-height:80px;overflow:auto}
@@ -77,7 +84,7 @@ td.g{color:var(--gold)} td.e{color:var(--ether)} td.m{color:var(--muted)}
 /* 결과 칸 */
 .tiles{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
 @media (min-width:640px){.tiles{grid-template-columns:repeat(4,minmax(0,1fr))}}
-.tile{border:1px solid var(--line);border-radius:8px;padding:7px 10px;background:var(--panel);min-width:0}
+.tile{border:none;border-radius:8px;padding:7px 10px;background:var(--panel);min-width:0}
 .tile .k{font-size:.76rem;color:var(--muted)}
 .tile .v{font-family:var(--f-num);font-size:1.15rem;font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .tile .s{font-size:.74rem;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -86,6 +93,10 @@ td.g{color:var(--gold)} td.e{color:var(--ether)} td.m{color:var(--muted)}
 .progress{height:5px;background:var(--line);border-radius:3px;overflow:hidden;flex:1;min-width:60px;align-self:center}
 .progress i{display:block;height:100%;width:0;background:var(--ether);transition:width .1s}
 canvas.chart{width:100%;height:120px;display:block}
+.chartBox{flex:1 1 auto;min-height:72px;padding:4px 6px 2px;display:flex}
+.chartBox canvas.chart{height:auto;flex:1;min-height:0}
+#simOut{flex:1;min-height:0}
+#simOut > *:not(.chartBox){flex-shrink:0}
 .chip{display:inline-block;font-size:.68rem;padding:0 7px;border-radius:99px;background:var(--gold-soft);color:var(--gold)}
 .story{background:var(--ether-soft);border-radius:8px;padding:7px 11px;font-size:.88rem;line-height:1.5}
 .story ul{margin:4px 0 0;padding-left:18px}
@@ -93,7 +104,7 @@ canvas.chart{width:100%;height:120px;display:block}
 small.cnt{display:block;font-size:.72rem;color:var(--muted);font-weight:400;font-family:var(--f-body)}
 .boxHead{padding:6px 10px;font-size:.86rem;font-weight:500;border-bottom:1px solid var(--line)}
 .strip{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
-.strip div{border:1px solid var(--line);border-radius:8px;padding:3px 9px;background:var(--panel);min-width:0}
+.strip div{border:none;border-radius:8px;padding:3px 9px;background:var(--panel);min-width:0}
 .strip span{display:block;font-size:.74rem;color:var(--muted)}
 .strip b{display:block;font-family:var(--f-num);font-size:1rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .strip .e b{color:var(--ether)} .strip .g b{color:var(--gold)}
@@ -101,6 +112,9 @@ table.ppl td,table.ppl th{padding:4px 8px}
 table.ppl td:first-child{text-align:left}
 table.ppl small{font-size:.72rem;color:var(--muted);font-family:var(--f-body)}
 table.ppl{font-size:.9rem}
+table.ppl tr.hl td{background:var(--gold-soft);font-weight:700}
+table.ppl tr.hl td:first-child{color:var(--gold)}
+table.ppl tr.hl small{color:var(--gold)}
 @media (max-width:480px){table.ppl .meter-cell{display:none} table.ppl td,table.ppl th{padding:3px 6px}}
 table.ppl .lvl{font-size:.95rem}
 .meter{position:relative;height:12px;background:var(--line);border-radius:3px;min-width:60px;overflow:hidden}
@@ -200,9 +214,9 @@ dialog::backdrop{background:var(--scrim)}
   <div class="summary" id="theoryTiles"></div>
 
   <div class="tabs" role="tablist">
-    <button role="tab" id="tab-cost" aria-controls="pn-cost" aria-selected="true" type="button">비용 시뮬</button>
-    <button role="tab" id="tab-own" aria-controls="pn-own" aria-selected="false" type="button">보유 에테르</button>
-    <button role="tab" id="tab-man" aria-controls="pn-man" aria-selected="false" type="button">직접 강화</button>
+    <button role="tab" id="tab-cost" aria-controls="pn-cost" aria-selected="true" type="button"><b>목표 비용</b><small>목표까지 드는 에테르</small></button>
+    <button role="tab" id="tab-own" aria-controls="pn-own" aria-selected="false" type="button"><b>내 에테르로</b><small>몇 강까지 가능?</small></button>
+    <button role="tab" id="tab-man" aria-controls="pn-man" aria-selected="false" type="button"><b>직접 강화</b><small>한 번씩 눌러보기</small></button>
   </div>
 
   <!-- 비용 시뮬 -->
@@ -210,15 +224,12 @@ dialog::backdrop{background:var(--scrim)}
     <div class="row">
       <label class="f" style="width:110px">반복 횟수(사람 수)
         <select id="runs">
-          <option value="5">5명</option>
           <option value="10">10명</option>
-          <option value="25">25명</option>
+          <option value="20">20명</option>
           <option value="50">50명</option>
           <option value="100">100명</option>
-          <option value="500">500명</option>
           <option value="1000">1,000명</option>
           <option value="10000" selected>10,000명</option>
-          <option value="50000">50,000명</option>
           <option value="100000">100,000명</option>
         </select>
       </label>
@@ -226,7 +237,7 @@ dialog::backdrop{background:var(--scrim)}
       <div class="progress"><i id="prog"></i></div>
     </div>
     <p class="hint" id="runsHint" hidden></p>
-    <div id="simOut" style="display:flex;flex-direction:column;gap:8px"><p class="note">실행하면 시작 강 → 목표 강을 여러 번 반복한 결과가 나옵니다.</p></div>
+    <div id="simOut" style="display:flex;flex-direction:column;gap:6px"><p class="note">실행하면 시작 강 → 목표 강을 여러 번 반복한 결과가 나옵니다.</p></div>
   </section>
 
   <!-- 보유 에테르 -->
@@ -235,15 +246,12 @@ dialog::backdrop{background:var(--scrim)}
       <label class="f" style="width:110px">보유 에테르(개)<input type="number" id="owned" min="0" step="1" value="10000" inputmode="numeric"></label>
       <label class="f" style="width:110px">반복(사람 수)
         <select id="ownRuns">
-          <option value="5">5명</option>
           <option value="10">10명</option>
-          <option value="25">25명</option>
+          <option value="20">20명</option>
           <option value="50">50명</option>
           <option value="100">100명</option>
-          <option value="500">500명</option>
           <option value="1000">1,000명</option>
           <option value="10000" selected>10,000명</option>
-          <option value="50000">50,000명</option>
           <option value="100000">100,000명</option>
         </select>
       </label>
@@ -442,20 +450,32 @@ function showSim(){
   const As=Float64Array.from(A).sort(), Es=Float64Array.from(E).sort();
   let sa=0,se=0; for(let i=0;i<R;i++){sa+=A[i];se+=E[i];}
   const ma=sa/R, me=se/R;
-  const rows=[['최고 행운',0],['행운 10%',0.10],['중앙값',0.5],['불운 10%',0.90],['불운 1%',0.99],['최악 불운',1]];
+  const rows=rankRows(R);
   $('simOut').innerHTML=`
     <div class="strip">
       <div><span>평균 시도</span><b>${nf(ma,0)}회</b></div>
       <div class="e"><span>평균 에테르</span><b>${nf(me)}개</b></div>
       <div class="g"><span>평균 금액</span><b>${money(me*pr)}</b></div>
     </div>
-    <div class="box" style="padding:4px 6px 2px"><canvas class="chart" id="hist" aria-label="소모 에테르 분포 히스토그램"></canvas></div>
+    <div class="box chartBox"><canvas class="chart" id="hist" aria-label="소모 에테르 분포 히스토그램"></canvas></div>
     <div class="box"><div class="boxHead"><b>${nf(R)}명</b>이 각자 ${s}강 → ${t}강까지 강화하면 <span class="note" style="font-weight:400">· 등수는 적게 쓴 순</span></div><table class="pct ppl">
       <thead><tr><th>구간</th><th>에테르</th><th>금액</th></tr></thead>
-      <tbody>${rows.map(([n,p])=>{const rk=p===0?1:p===1?R:Math.max(1,Math.ceil(p*R));const e=p===0?Es[0]:p===1?Es[R-1]:q(Es,p);
-        return `<tr><td>${n} <small>${nf(rk)}등</small></td><td class="num e">${nf(e)}</td><td class="num g">${money(e*pr)}</td></tr>`}).join('')}</tbody>
+      <tbody>${rows.map(({n,rk,cls})=>{const e=Es[rk-1];
+        return `<tr class="${cls}"><td>${cls?'★ ':''}${n} <small>${nf(rk)}등</small></td><td class="num e">${nf(e)}</td><td class="num g">${money(e*pr)}</td></tr>`}).join('')}</tbody>
     </table></div>`;
   drawHist(Es,me);
+}
+// 구간별 등수: 위쪽은 1등부터 한 등씩 밀고, 아래쪽은 꼴등부터 한 등씩 당겨서 겹치지 않게
+function rankRows(R){
+  const mid=Math.ceil(R/2);
+  const lo=[['최고 행운',0,'hl'],['행운 1%',.01,'hl'],['행운 10%',.1,'']];
+  const hi=[['불운 10%',.9,''],['불운 1%',.99,''],['최악 불운',1,'']];
+  const out=[]; let prev=0;
+  lo.forEach(([n,p,cls])=>{const raw=p===0?1:Math.ceil(p*R);const rk=Math.max(raw,prev+1);if(rk<mid){out.push({n,rk,cls});prev=rk;}});
+  out.push({n:'중앙값',rk:mid,cls:''});
+  const tail=[]; let next=R+1;
+  [...hi].reverse().forEach(([n,p,cls])=>{const raw=p===1?R:R+1-Math.ceil((1-p)*R);const rk=Math.min(raw,next-1);if(rk>mid){tail.unshift({n,rk,cls});next=rk;}});
+  return out.concat(tail);
 }
 function drawHist(Es,mean){
   const cv=$('hist'); if(!cv)return;
