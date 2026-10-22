@@ -138,7 +138,7 @@ td.meter-cell{width:40%}
  @media (max-width:380px){
   .slot,.slot canvas{width:92px!important;height:92px!important} .slotCol{width:92px!important}
   .forge{gap:8px!important}
-  .mstats{font-size:.8rem!important;gap:1px 5px!important} .mstats span{font-size:.72rem!important} .mstats em{font-size:.74rem!important}
+  .mstats{font-size:.8rem!important;gap:1px 5px!important} .mstats .mny{font-size:.68rem!important;letter-spacing:-.04em} .mstats span{font-size:.72rem!important} .mstats em{font-size:.74rem!important}
   .lvlBig{font-size:1.8rem!important}
   .log{font-size:.68rem!important;padding:4px 6px!important}
 }
@@ -164,6 +164,8 @@ td.meter-cell{width:40%}
 .mstats{display:grid;grid-template-columns:auto minmax(max-content,1fr) minmax(max-content,1fr);gap:1px 6px;font-size:.88rem;align-items:baseline;margin-top:4px}
 .mstats span{color:var(--muted);font-size:.78rem;white-space:nowrap}
 .mstats i.colh{font-style:normal;font-size:.7rem;color:var(--muted);text-align:right}
+.mstats i.colh.lft{text-align:left}
+.mstats .mny{font-size:.76rem;letter-spacing:-.03em}
 .mstats b{font-family:var(--f-num);font-weight:700;text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .mstats em{font-style:normal;font-family:var(--f-num);color:var(--muted);text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:.82rem}
 .mstats b.lk{color:var(--ok)} .mstats b.ulk{color:var(--danger)}
@@ -867,11 +869,11 @@ function writeStats(){
     pl.className='pl '+(g?'gain':'loss');
     pl.innerHTML=`<b>${g?'이득':'손해'}</b><small>${g?'+':'−'}${nf(Math.abs(d))}개<br>${g?'+':'−'}${moneyShort(Math.abs(d)*pr)}</small>`;}
   $('manTiles').innerHTML=`
-    <span></span><i class="colh">실제</i><i class="colh">기댓값</i>
-    <span>누적 시도</span><b class="${tone(doneAtt,exa)}">${nf(Math.round(disp.att))}회</b><em>${nf(exa)}회</em>
-    <span>누적 에테르</span><b class="${tone(doneEth,ex)}">${nf(Math.round(disp.eth))}개</b><em>${nf(ex)}개</em>
-    <span>누적 금액</span><b class="${tone(doneEth,ex)}">${moneyShort(disp.eth*pr)}</b><em>${moneyShort(ex*pr)}</em>
-    <span>다음 시도</span><b class="next">${done?'최대 강화':`${P[man.lvl]}% <small class="cost">(${C[man.lvl]}개)</small>`}</b>`;
+    <i class="colh lft">누적</i><i class="colh">실제</i><i class="colh">기댓값</i>
+    <span>시도</span><b class="${tone(doneAtt,exa)}">${nf(Math.round(disp.att))}회</b><em>${nf(exa)}회</em>
+    <span>에테르</span><b class="${tone(doneEth,ex)}">${nf(Math.round(disp.eth))}개</b><em>${nf(ex)}개</em>
+    <span>금액</span><b class="mny ${tone(doneEth,ex)}">${money(disp.eth*pr)}</b><em class="mny">${money(ex*pr)}</em>
+    <span>다음</span><b class="next">${done?'최대 강화':`${P[man.lvl]}% <small class="cost">(${C[man.lvl]}개)</small>`}</b>`;
 }
 function tweenStep(){
   const k=reduce.matches?1:.3;
