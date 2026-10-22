@@ -135,6 +135,19 @@ td.meter-cell{width:40%}
 /* 직접 강화 */
 .forge{display:grid;grid-template-columns:auto minmax(0,1fr);gap:12px;align-items:center}
 .slot{position:relative;width:112px;height:112px;flex-shrink:0}
+ @media (max-width:380px){
+  .slot,.slot canvas{width:92px!important;height:92px!important} .slotCol{width:92px!important}
+  .forge{gap:8px!important}
+  .mstats{font-size:.8rem!important;gap:1px 5px!important} .mstats span{font-size:.72rem!important} .mstats em{font-size:.74rem!important}
+  .lvlBig{font-size:1.8rem!important}
+  .log{font-size:.68rem!important;padding:4px 6px!important}
+}
+.slotCol{display:flex;flex-direction:column;align-items:center;gap:4px;width:112px}
+.pl{width:100%;text-align:center;border-radius:7px;padding:2px 4px;font-size:.78rem;line-height:1.25;background:var(--panel);color:var(--muted)}
+.pl b{display:block;font-family:var(--f-display);font-weight:400;font-size:1rem}
+.pl small{font-family:var(--f-num);font-size:.68rem}
+.pl.gain{background:var(--ok-soft,rgba(95,196,138,.15));color:var(--ok)}
+.pl.loss{background:rgba(228,109,109,.14);color:var(--danger)}
 .slot canvas{width:112px;height:112px;display:block}
 .slot.shake{animation:shake .32s}
 .slot.pop{animation:popItem .45s cubic-bezier(.3,1.6,.5,1)}
@@ -148,12 +161,12 @@ td.meter-cell{width:40%}
 .lvlBig small{font-family:var(--f-body);font-size:.8rem;color:var(--muted)}
 .lvlBig.bump{animation:bump .4s cubic-bezier(.3,1.8,.5,1)}
 @keyframes bump{0%{transform:scale(1)}40%{transform:scale(1.25);color:var(--ok)}100%{transform:scale(1)}}
-.mstats{display:grid;grid-template-columns:auto minmax(0,1fr) minmax(0,1fr);gap:1px 8px;font-size:.88rem;align-items:baseline;margin-top:4px}
+.mstats{display:grid;grid-template-columns:auto minmax(max-content,1fr) minmax(max-content,1fr);gap:1px 6px;font-size:.88rem;align-items:baseline;margin-top:4px}
 .mstats span{color:var(--muted);font-size:.78rem;white-space:nowrap}
 .mstats i.colh{font-style:normal;font-size:.7rem;color:var(--muted);text-align:right}
 .mstats b{font-family:var(--f-num);font-weight:700;text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .mstats em{font-style:normal;font-family:var(--f-num);color:var(--muted);text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:.82rem}
-.mstats b.luck{color:var(--ok)} .mstats b.unluck{color:var(--danger)}
+.mstats b.lk{color:var(--ok)} .mstats b.ulk{color:var(--danger)}
 .mstats b.next{grid-column:2 / 4;font-size:.85rem}
 .mstats small.cost{font-family:var(--f-body);font-weight:400;font-size:.72rem;color:var(--muted)}
 .nextBar{height:5px;border-radius:3px;background:var(--line);overflow:hidden;margin-top:5px}
@@ -164,7 +177,9 @@ td.meter-cell{width:40%}
 .logHead small{font-weight:400}
 .log{font-family:var(--f-num);font-size:.74rem;padding:4px 8px;line-height:1.5;overflow:auto;flex:1;min-height:0}
 .log div{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.wins div{display:flex;align-items:baseline;gap:6px}
+.wins div,.winCols{display:flex;align-items:baseline;gap:6px}
+.winCols{padding:3px 8px 2px;font-size:.68rem;color:var(--muted);border-bottom:1px dashed var(--line)}
+.winCols b{min-width:2.6em;font-weight:500} .winCols small{margin-left:auto}
 .wins b{font-family:var(--f-display);font-weight:400;font-size:.95rem;min-width:2.6em}
 .wins span{font-weight:700}
 .wins small{margin-left:auto;color:var(--muted);font-size:.68rem}
@@ -291,7 +306,10 @@ dialog::backdrop{background:var(--scrim)}
   <!-- 직접 강화 -->
   <section class="pane" role="tabpanel" id="pn-man" aria-labelledby="tab-man" hidden style="overflow:hidden">
     <div class="forge">
-      <div class="slot" id="slot"><canvas id="itemCv" width="224" height="224" aria-label="어둠의 목걸이 강화 이미지"></canvas></div>
+      <div class="slotCol">
+        <div class="slot" id="slot"><canvas id="itemCv" width="224" height="224" aria-label="어둠의 목걸이 강화 이미지"></canvas></div>
+        <div class="pl" id="pl"></div>
+      </div>
       <div style="min-width:0">
         <div class="lvlBig" id="lvlBig">+<span id="curLvl">0</span><small>어둠의 목걸이</small></div>
         <div class="nextBar" title="다음 돌파까지"><i id="nextBar"></i></div>
@@ -300,7 +318,7 @@ dialog::backdrop{background:var(--scrim)}
     </div>
     <div class="logs fill">
       <div class="logCol"><div class="logHead">시도 기록 <small>누적 에테르</small></div><div class="log" id="log" aria-live="polite"></div></div>
-      <div class="logCol"><div class="logHead">성공 기록 <small>몇 번째 시도에 성공?</small></div><div class="log wins" id="wins"></div></div>
+      <div class="logCol"><div class="logHead">성공 기록 <small>몇 번째 시도에 성공?</small></div><div class="winCols"><b>강</b><span>성공</span><small>기댓값</small></div><div class="log wins" id="wins"></div></div>
     </div>
     <div class="dock">
       <div class="tryRow">
@@ -378,6 +396,8 @@ function money(x){
   if(man)parts.push(man.toLocaleString('ko-KR')+'만');
   return parts.join(' ')+'원';
 }
+// 좁은 칸용 금액: 1억 이상은 1.23억원
+function moneyShort(x){if(!isFinite(x))return '∞';if(x>=1e8)return (x/1e8).toFixed(x>=1e10?0:2).replace(/\.?0+$/,'')+'억원';return money(x);}
 const price=()=>Math.max(0,parseFloat($('price').value)||0);
 function range(){
   let s=Math.max(0,Math.min(29,parseInt($('start').value)||0));
@@ -444,7 +464,7 @@ function recalc(){
   $('theoryTiles').innerHTML=`
     <div><span>기대 시도</span><b>${nf(theory.att,0)}회</b></div>
     <div class="e"><span>기대 에테르</span><b>${nf(theory.eth)}개</b></div>
-    <div class="g"><span>기대 금액</span><b>${money(theory.eth*pr)}</b></div>`;
+    <div class="g"><span>기대 금액</span><b>${moneyShort(theory.eth*pr)}</b></div>`;
   $('runsHint').innerHTML='';
   $('ownHint').innerHTML=`보유 에테르 가치 ${money(ownedN()*pr)} · 에테르를 다 쓸 때까지 강화`;
   renderMan();
@@ -485,7 +505,7 @@ function showSim(){
     <div class="strip">
       <div><span>평균 시도</span><b>${nf(ma,0)}회</b></div>
       <div class="e"><span>평균 에테르</span><b>${nf(me)}개</b></div>
-      <div class="g"><span>평균 금액</span><b>${money(me*pr)}</b></div>
+      <div class="g"><span>평균 금액</span><b>${moneyShort(me*pr)}</b></div>
     </div>
     <div class="box chartBox"><canvas class="chart" id="hist" aria-label="소모 에테르 분포 히스토그램"></canvas></div>
     <div class="box"><div class="boxHead"><b>${nf(R)}명</b>이 각자 ${s}강 → ${t}강까지 강화하면 <span class="note" style="font-weight:400">· 등수는 적게 쓴 순</span></div><table class="pct ppl">
@@ -787,7 +807,7 @@ function addWin(lvl,tries){
   const e=winsEl.querySelector('.empty'); if(e)e.remove();
   const exp=100/P[lvl-1], d=document.createElement('div');
   d.className=(tries<=exp?'good':'slow')+(lvl%5===0?' ms':'');
-  d.innerHTML=`<b>+${lvl}</b><span>${nf(tries)}번째</span><small>평균 ${nf(exp,exp<10?1:0)}</small>`;
+  d.innerHTML=`<b>+${lvl}</b><span>${nf(tries)}번째</span><small>${nf(exp,exp<10?1:0)}번째</small>`;
   winsEl.prepend(d);
 }
 // 1회 시도 처리 (공통)
@@ -808,7 +828,7 @@ function runBatch(n,stopAt){
     if(man.lvl>=N||man.lvl>=stopAt)break;
     const {ok,from}=attempt();
     if(ok)succ++; else fails++;
-    addLog(ok?'ok':'bad',`#${nf(man.att)} ${from}→${from+1} ${ok?'성공':'실패'} ${nf(man.eth)}`);
+    addLog(ok?'ok':'bad',`#${man.att} ${from}→${from+1} ${ok?'성공':'실패'} ${nf(man.eth)}`);
     if(ok&&man.lvl%5===0){ms=man.lvl;break;}
   }
   feedback(succ,fails);
@@ -840,12 +860,17 @@ function writeStats(){
   let ex=0, exa=0; for(let i=man.start;i<man.lvl;i++){const e=stageExp(i);ex+=e.eth;exa+=e.att;}   // 시작 강 → 지금 강까지 기댓값
   // 색 판정은 '지금 강까지 쓴 양'으로 (현재 단계에서 실패 중인 시도는 빼고 비교)
   const curC=done?0:C[man.lvl], doneAtt=man.att-man.stage, doneEth=man.eth-man.stage*curC;
-  const tone=(a,e)=>man.lvl>man.start?(a<=e?'luck':'unluck'):'';
+  const tone=(a,e)=>man.lvl>man.start?(a<=e?'lk':'ulk'):'';
+  const pl=$('pl');
+  if(man.lvl<=man.start){pl.className='pl';pl.innerHTML='<b>—</b><small>성공하면 표시</small>';}
+  else{const d=ex-doneEth, g=d>=0;
+    pl.className='pl '+(g?'gain':'loss');
+    pl.innerHTML=`<b>${g?'이득':'손해'}</b><small>${g?'+':'−'}${nf(Math.abs(d))}개<br>${g?'+':'−'}${moneyShort(Math.abs(d)*pr)}</small>`;}
   $('manTiles').innerHTML=`
     <span></span><i class="colh">실제</i><i class="colh">기댓값</i>
     <span>누적 시도</span><b class="${tone(doneAtt,exa)}">${nf(Math.round(disp.att))}회</b><em>${nf(exa)}회</em>
     <span>누적 에테르</span><b class="${tone(doneEth,ex)}">${nf(Math.round(disp.eth))}개</b><em>${nf(ex)}개</em>
-    <span>누적 금액</span><b class="${tone(doneEth,ex)}">${money(disp.eth*pr)}</b><em>${money(ex*pr)}</em>
+    <span>누적 금액</span><b class="${tone(doneEth,ex)}">${moneyShort(disp.eth*pr)}</b><em>${moneyShort(ex*pr)}</em>
     <span>다음 시도</span><b class="next">${done?'최대 강화':`${P[man.lvl]}% <small class="cost">(${C[man.lvl]}개)</small>`}</b>`;
 }
 function tweenStep(){
@@ -920,7 +945,7 @@ $('tryGoal').addEventListener('click',()=>{
   while(man.lvl<t&&man.lvl<N&&guard<5e7){
     guard++; const {ok,from}=attempt();
     if(ok){succ++;
-      addLog('ok',`#${nf(man.att)} ${from}→${from+1} 성공 ${nf(man.eth)}`);
+      addLog('ok',`#${man.att} ${from}→${from+1} 성공 ${nf(man.eth)}`);
       if(man.lvl%5===0){ms=man.lvl;break;}}
   }
   feedback(succ,0); renderMan();
