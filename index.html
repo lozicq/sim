@@ -113,6 +113,17 @@ table.ppl td:first-child{text-align:left}
 table.ppl small{font-size:.72rem;color:var(--muted);font-family:var(--f-body)}
 table.ppl{font-size:.9rem}
 table.ppl tr.hl td{background:var(--gold-soft);font-weight:700}
+table.dist td.lvl{text-align:left;white-space:nowrap}
+table.dist td.barc,table.dist th.barc{width:52%;display:table-cell}
+.bar{height:14px;background:var(--line);border-radius:4px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--ether);opacity:.5;border-radius:4px}
+table.dist tr.mode td{background:var(--ether-soft);font-weight:700}
+table.dist tr.mode .bar i{opacity:1}
+table.dist tr.mode small{color:var(--ether);font-weight:700}
+table.dist tr.goal td{box-shadow:inset 0 2px 0 var(--gold),inset 0 -2px 0 var(--gold)}
+table.dist tr.goal td:first-child{box-shadow:inset 2px 2px 0 var(--gold),inset 0 -2px 0 var(--gold)}
+table.dist tr.goal td:last-child{box-shadow:inset -2px 2px 0 var(--gold),inset 0 -2px 0 var(--gold)}
+table.dist small.gl{color:var(--gold);font-weight:700}
 table.ppl tr.hl td:first-child{color:var(--gold)}
 table.ppl tr.hl small{color:var(--gold)}
 @media (max-width:480px){table.ppl .meter-cell{display:none} table.ppl td,table.ppl th{padding:3px 6px}}
@@ -461,7 +472,7 @@ function showSim(){
     <div class="box"><div class="boxHead"><b>${nf(R)}명</b>이 각자 ${s}강 → ${t}강까지 강화하면 <span class="note" style="font-weight:400">· 등수는 적게 쓴 순</span></div><table class="pct ppl">
       <thead><tr><th>구간</th><th>에테르</th><th>금액</th></tr></thead>
       <tbody>${rows.map(({n,rk,cls})=>{const e=Es[rk-1];
-        return `<tr class="${cls}"><td>${cls?'★ ':''}${n} <small>${nf(rk)}등</small></td><td class="num e">${nf(e)}</td><td class="num g">${money(e*pr)}</td></tr>`}).join('')}</tbody>
+        return `<tr class="${cls}"><td>${n} <small>${nf(rk)}등</small></td><td class="num e">${nf(e)}</td><td class="num g">${money(e*pr)}</td></tr>`}).join('')}</tbody>
     </table></div>`;
   drawHist(Es,me);
 }
@@ -529,17 +540,23 @@ function showOwn(){
   const sorted=Uint8Array.from(fin).sort();
   const med=q(sorted,.5), lucky=q(sorted,.9), unlucky=q(sorted,.1);
   let mode=s; for(let l=0;l<=N;l++)if(reach[l]>reach[mode])mode=l;
-  const rows=[];
-  for(let l=s+1;l<=N;l++){const pr=ge[l]/R; if(pr<0.003&&l>expLvl+1)break; if(pr>=0.9995&&ge[l+1]/R>=0.9995)continue; rows.push([l,pr]);}
+  // 최종 강화 분포: 0.2% 미만인 양 끝은 생략
+  const [,tg]=range();
+  let lo=sorted[0], hi=sorted[sorted.length-1];
+  while(lo<hi&&reach[lo]/R<0.002)lo++; while(hi>lo&&reach[hi]/R<0.002)hi--;
+  const top=Math.max(...Array.from(reach.slice(lo,hi+1)))||1;
+  const pct=x=>{const v=x/R*100;return v>=99.95?'100':nf(v,v<1?2:1);};
+  const rows=[]; for(let l=lo;l<=hi;l++)rows.push(l);
   $('ownOut').innerHTML=`
     <div class="story"><b>${nf(R)}명</b>이 각자 ${nf(B)}개(${money(B*price())})로 ${s}강부터 강화하면<br>
-      평균 <b class="e">${nf(mean,1)}강</b> · 절반은 <b>${med}강↑</b> · 최고 <b>${sorted[sorted.length-1]}강</b> · 최저 <b>${sorted[0]}강</b></div>
-    <div class="box fill"><table class="pct ppl">
-      <thead><tr><th>강</th><th>이상 도달</th><th class="meter-cell"></th><th>여기서 멈춤</th></tr></thead>
-      <tbody>${rows.map(([l,pr])=>`<tr><td class="lvl" style="text-align:center">${l}강</td>
-        <td class="num">${pr>=0.9995?'100':nf(pr*100,pr<0.01?2:1)}% <small>${nf(ge[l])}명</small></td>
-        <td class="meter-cell"><div class="meter"><i style="width:${(pr*100).toFixed(2)}%"></i></div></td>
-        <td class="num m">${nf(reach[l]/R*100,reach[l]/R<0.01?2:1)}% <small>${nf(reach[l])}명</small></td></tr>`).join('')}</tbody>
+      목표 ${tg}강 이상 도달: <b class="e">${pct(ge[tg])}%</b> (${nf(ge[tg])}명)<br>
+      평균 <b>${nf(mean,1)}강</b> · 절반은 <b>${med}강↑</b> · 최고 <b>${sorted[sorted.length-1]}강</b> · 최저 <b>${sorted[0]}강</b></div>
+    <div class="box fill"><table class="pct ppl dist">
+      <thead><tr><th>최종 강화</th><th class="barc"></th><th>사람</th></tr></thead>
+      <tbody>${rows.map(l=>`<tr class="${l===mode?'mode':''}${l===tg?' goal':''}">
+        <td class="lvl">${l}강${l===mode?'<small> 최다</small>':''}${l===tg?'<small class="gl"> 목표</small>':''}</td>
+        <td class="barc"><div class="bar"><i style="width:${(reach[l]/top*100).toFixed(1)}%"></i></div></td>
+        <td class="num">${pct(reach[l])}% <small>${nf(reach[l])}명</small></td></tr>`).join('')}</tbody>
     </table></div>`;
 }
 
@@ -874,7 +891,7 @@ $('manReset').addEventListener('click',manReset);
 
 /* 공통 입력 */
 $('start').addEventListener('input',()=>{recalc();invalidate();});
-$('target').addEventListener('input',()=>{recalc();lastSim=null;$('prog').style.width='0';$('simOut').innerHTML='<p class="note">목표 강이 바뀌었습니다. 다시 실행해 주세요.</p>';});
+$('target').addEventListener('input',()=>{recalc();showOwn();lastSim=null;$('prog').style.width='0';$('simOut').innerHTML='<p class="note">목표 강이 바뀌었습니다. 다시 실행해 주세요.</p>';});
 $('start').addEventListener('change',manReset);
 $('price').addEventListener('input',()=>{recalc();showSim();});
 $('owned').addEventListener('input',()=>{recalc();});
