@@ -154,7 +154,8 @@ td.meter-cell{width:40%}
 .mstats b{font-family:var(--f-num);font-weight:700;text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .mstats em{font-style:normal;font-family:var(--f-num);color:var(--muted);text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:.82rem}
 .mstats b.luck{color:var(--ok)} .mstats b.unluck{color:var(--danger)}
-.mstats b.next{grid-column:2 / 4;font-family:var(--f-body);font-weight:500;font-size:.8rem}
+.mstats b.next{grid-column:2 / 4;font-size:.85rem}
+.mstats small.cost{font-family:var(--f-body);font-weight:400;font-size:.72rem;color:var(--muted)}
 .nextBar{height:5px;border-radius:3px;background:var(--line);overflow:hidden;margin-top:5px}
 .nextBar i{display:block;height:100%;background:linear-gradient(90deg,var(--ether),var(--gold));transition:width .25s}
 .logs{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:6px;overflow:hidden!important}
@@ -845,7 +846,7 @@ function writeStats(){
     <span>누적 시도</span><b class="${tone(doneAtt,exa)}">${nf(Math.round(disp.att))}회</b><em>${nf(exa)}회</em>
     <span>누적 에테르</span><b class="${tone(doneEth,ex)}">${nf(Math.round(disp.eth))}개</b><em>${nf(ex)}개</em>
     <span>누적 금액</span><b class="${tone(doneEth,ex)}">${money(disp.eth*pr)}</b><em>${money(ex*pr)}</em>
-    <span>다음 시도</span><b class="next">${done?'최대 강화':`성공률 ${P[man.lvl]}% · 1회 ${C[man.lvl]}개`}</b>`;
+    <span>다음 시도</span><b class="next">${done?'최대 강화':`${P[man.lvl]}% <small class="cost">(${C[man.lvl]}개)</small>`}</b>`;
 }
 function tweenStep(){
   const k=reduce.matches?1:.3;
