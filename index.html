@@ -258,13 +258,13 @@ dialog::backdrop{background:var(--scrim)}
   <div class="summary" id="theoryTiles"></div>
 
   <div class="tabs" role="tablist">
-    <button role="tab" id="tab-cost" aria-controls="pn-cost" aria-selected="true" type="button"><b>목표 비용</b><small>목표까지 드는 에테르</small></button>
+    <button role="tab" id="tab-man" aria-controls="pn-man" aria-selected="true" type="button"><b>직접 강화</b><small>한 번씩 눌러보기</small></button>
+    <button role="tab" id="tab-cost" aria-controls="pn-cost" aria-selected="false" type="button"><b>목표 비용</b><small>목표까지 드는 에테르</small></button>
     <button role="tab" id="tab-own" aria-controls="pn-own" aria-selected="false" type="button"><b>내 에테르로</b><small>몇 강까지 가능?</small></button>
-    <button role="tab" id="tab-man" aria-controls="pn-man" aria-selected="false" type="button"><b>직접 강화</b><small>한 번씩 눌러보기</small></button>
   </div>
 
   <!-- 비용 시뮬 -->
-  <section class="pane" role="tabpanel" id="pn-cost" aria-labelledby="tab-cost">
+  <section class="pane" role="tabpanel" id="pn-cost" aria-labelledby="tab-cost" hidden>
     <div class="row">
       <label class="f" style="width:110px">반복 횟수(사람 수)
         <select id="runs">
@@ -306,7 +306,7 @@ dialog::backdrop{background:var(--scrim)}
   </section>
 
   <!-- 직접 강화 -->
-  <section class="pane" role="tabpanel" id="pn-man" aria-labelledby="tab-man" hidden style="overflow:hidden">
+  <section class="pane" role="tabpanel" id="pn-man" aria-labelledby="tab-man" style="overflow:hidden">
     <div class="forge">
       <div class="slotCol">
         <div class="slot" id="slot"><canvas id="itemCv" width="224" height="224" aria-label="어둠의 목걸이 강화 이미지"></canvas></div>
@@ -409,7 +409,7 @@ function range(){
 }
 
 /* 탭 */
-const tabs=['cost','own','man'];
+const tabs=['man','cost','own'];
 function showTab(k){
   tabs.forEach(t=>{$('tab-'+t).setAttribute('aria-selected',t===k);$('pn-'+t).hidden=t!==k;});
   try{localStorage.setItem(KEY+'-tab',k)}catch(e){}
@@ -971,7 +971,7 @@ let rt; window.addEventListener('resize',()=>{clearTimeout(rt);rt=setTimeout(sho
 applyTheme();
 $('themeBtn').addEventListener('click',()=>{const t=curTheme()==='dark'?'light':'dark';applyTheme(t);try{localStorage.setItem(KEY+'-theme',t)}catch(e){}});
 buildTable(); manReset(); recalc(); runSim(); runOwn(); startItemLoop();
-try{const t=localStorage.getItem(KEY+'-tab');if(tabs.includes(t))showTab(t);}catch(e){}
+showTab('man');   // 항상 직접 강화로 시작
 </script>
 </body>
 </html>
