@@ -834,9 +834,9 @@ function renderMan(){
 }
 function writeStats(){
   const pr=price(), done=man.lvl>=N;
-  let ex=0; for(let i=man.start;i<man.lvl;i++)ex+=stageExp(i).eth;   // 시작 강 → 지금 강까지 기댓값
+  let ex=0, exa=0; for(let i=man.start;i<man.lvl;i++){const e=stageExp(i);ex+=e.eth;exa+=e.att;}   // 시작 강 → 지금 강까지 기댓값
   $('manTiles').innerHTML=`
-    <span>누적 시도</span><b>${nf(Math.round(disp.att))}회 · 성공 ${nf(man.ok)}</b>
+    <span>누적 시도</span><b>${nf(Math.round(disp.att))}회 <small class="exp">기대 ${nf(exa)}회</small></b>
     <span>누적 에테르</span><b class="e">${nf(Math.round(disp.eth))}개 <small class="exp">기대 ${nf(ex)}</small></b>
     <span>누적 금액</span><b class="g">${money(disp.eth*pr)} <small class="exp">기대 ${money(ex*pr)}</small></b>
     <span>다음 시도</span><b>${done?'최대 강화':P[man.lvl]+'% · '+C[man.lvl]+'개'}</b>`;
