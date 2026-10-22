@@ -152,6 +152,7 @@ td.meter-cell{width:40%}
 .mstats span{color:var(--muted);font-size:.8rem}
 .mstats b{font-family:var(--f-num);font-weight:700;text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .mstats .e{color:var(--ether)} .mstats .g{color:var(--gold)}
+.mstats small.exp{font-family:var(--f-body);font-weight:500;font-size:.72rem;color:var(--muted);margin-left:2px}
 .nextBar{height:5px;border-radius:3px;background:var(--line);overflow:hidden;margin-top:5px}
 .nextBar i{display:block;height:100%;background:linear-gradient(90deg,var(--ether),var(--gold));transition:width .25s}
 .logs{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:6px;overflow:hidden!important}
@@ -833,10 +834,11 @@ function renderMan(){
 }
 function writeStats(){
   const pr=price(), done=man.lvl>=N;
+  let ex=0; for(let i=man.start;i<man.lvl;i++)ex+=stageExp(i).eth;   // 시작 강 → 지금 강까지 기댓값
   $('manTiles').innerHTML=`
     <span>누적 시도</span><b>${nf(Math.round(disp.att))}회 · 성공 ${nf(man.ok)}</b>
-    <span>누적 에테르</span><b class="e">${nf(Math.round(disp.eth))}개</b>
-    <span>누적 금액</span><b class="g">${money(disp.eth*pr)}</b>
+    <span>누적 에테르</span><b class="e">${nf(Math.round(disp.eth))}개 <small class="exp">기대 ${nf(ex)}</small></b>
+    <span>누적 금액</span><b class="g">${money(disp.eth*pr)} <small class="exp">기대 ${money(ex*pr)}</small></b>
     <span>다음 시도</span><b>${done?'최대 강화':P[man.lvl]+'% · '+C[man.lvl]+'개'}</b>`;
 }
 function tweenStep(){
