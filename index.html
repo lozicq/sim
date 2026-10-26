@@ -50,6 +50,15 @@ button:disabled{opacity:.5;cursor:default}
 .top{display:flex;align-items:center;justify-content:space-between;gap:8px}
 .top h1{flex:1 1 auto;font-family:var(--f-display);font-weight:400;font-size:1.3rem;margin:0;line-height:1.1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
 .top button{font-size:.82rem;padding:6px 8px;flex-shrink:0;white-space:nowrap}
+#shareDlg{border:1px solid var(--line);border-radius:14px;background:var(--panel);color:var(--ink);padding:0;width:min(420px,calc(100vw - 24px));max-height:calc(100% - 24px)}
+#shareDlg::backdrop{background:var(--scrim)}
+.sh-body{display:flex;flex-direction:column;gap:8px;padding:14px;max-height:calc(100vh - 40px)}
+.sh-body h2{margin:0;font-family:var(--f-display);font-weight:400;font-size:1.3rem}
+#shareImg{display:block;width:100%;min-height:0;flex:1 1 auto;object-fit:contain;max-height:52vh;border-radius:8px;border:1px solid var(--line);background:var(--bg)}
+#shareText{width:100%;resize:none;font:inherit;font-size:.8rem;background:var(--bg);color:var(--ink);border:1px solid var(--line);border-radius:7px;padding:6px}
+.sh-btns{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.sh-btns #shareGo{grid-column:1 / -1;padding:11px}
+#toastS{position:fixed;left:50%;bottom:calc(90px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:70;background:var(--ink);color:var(--bg);padding:8px 14px;border-radius:99px;font-size:.85rem;max-width:90vw;text-align:center}
 .top .row{flex:0 0 auto}
 .inputs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
 label.f{display:flex;flex-direction:column;gap:2px;font-size:.78rem;font-weight:500;color:var(--muted)}
@@ -248,6 +257,7 @@ dialog::backdrop{background:var(--scrim)}
     <div class="row" style="flex-wrap:nowrap;align-items:center;gap:6px">
       <button id="themeBtn" type="button" aria-label="배경 바꾸기">다크</button>
       <button id="openTbl" type="button">확률표</button>
+      <button id="shareBtn" class="primary" type="button">공유</button>
     </div>
   </div>
   <div class="inputs">
@@ -338,6 +348,21 @@ dialog::backdrop{background:var(--scrim)}
 
 <div id="screenFlash"></div>
 <canvas id="fx" aria-hidden="true"></canvas>
+<dialog id="shareDlg" aria-labelledby="shareTitle">
+  <div class="sh-body">
+    <h2 id="shareTitle">결과 공유</h2>
+    <img id="shareImg" alt="공유할 결과 이미지">
+    <p class="hint">이미지를 길게 누르면 바로 저장·공유할 수도 있어요.</p>
+    <textarea id="shareText" rows="2" readonly aria-label="함께 보낼 문장"></textarea>
+    <div class="sh-btns">
+      <button id="shareGo" class="primary" type="button">카톡 등으로 공유</button>
+      <button id="shareSave" type="button">JPG 저장</button>
+      <button id="shareCopy" type="button">문장·링크 복사</button>
+      <button id="shareClose" type="button">닫기</button>
+    </div>
+  </div>
+</dialog>
+<div id="toastS" role="status" hidden></div>
 <dialog id="msDlg" aria-labelledby="msTitle">
   <div class="ms-body">
     <canvas id="msCv" width="300" height="300" aria-hidden="true"></canvas>
@@ -972,6 +997,108 @@ applyTheme();
 $('themeBtn').addEventListener('click',()=>{const t=curTheme()==='dark'?'light':'dark';applyTheme(t);try{localStorage.setItem(KEY+'-theme',t)}catch(e){}});
 buildTable(); manReset(); recalc(); runSim(); runOwn(); startItemLoop();
 showTab('man');   // 항상 직접 강화로 시작
+
+/* ===== 결과 공유: 화면 캡처 + 아래 결과·링크·QR 띠 → JPG ===== */
+const SITE='https://lozicq.github.io/sim/';
+const LIBS={h2c:'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js',
+            qr:'https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js'};
+function loadScript(src){return new Promise((ok,no)=>{const s=document.createElement('script');s.src=src;s.onload=ok;s.onerror=()=>no(new Error('load'));document.head.appendChild(s);});}
+async function ensureLibs(){
+  if(!window.html2canvas)await loadScript(LIBS.h2c);
+  if(!window.qrcode)await loadScript(LIBS.qr);
+}
+const curTab=()=>tabs.find(t=>$('tab-'+t).getAttribute('aria-selected')==='true');
+// 지금 탭의 결과 요약 두 줄
+function shareLines(){
+  const [s,t]=range(), pr=price(), k=curTab();
+  if(k==='man'){
+    let ex=0,exa=0; for(let i=man.start;i<man.lvl;i++){const e=stageExp(i);ex+=e.eth;exa+=e.att;}
+    const curC=man.lvl>=N?0:C[man.lvl], doneEth=man.eth-man.stage*curC;
+    const l1=`직접 강화 ${man.start}→${man.lvl}강 · ${nf(man.att)}회 · ${nf(man.eth)}개 · ${money(man.eth*pr)}`;
+    let l2='아직 성공한 강이 없습니다';
+    if(man.lvl>man.start){const d=ex-doneEth, r=ex?Math.round(Math.abs(d)/ex*100):0;
+      l2=d>=0?`기댓값보다 ${r}% 덜 씀 · 이득 ${nf(d)}개 (${moneyShort(d*pr)})`:`기댓값보다 ${r}% 더 씀 · 손해 ${nf(-d)}개 (${moneyShort(-d*pr)})`;}
+    return [l1,l2];
+  }
+  if(k==='cost'&&lastSim){
+    const Es=Float64Array.from(lastSim.E).sort(), R=Es.length; let se=0; for(const v of Es)se+=v;
+    return [`${nf(R)}명 시뮬 ${lastSim.s}→${lastSim.t}강 · 평균 ${nf(se/R)}개 (${moneyShort(se/R*pr)})`,
+            `최고 행운 ${nf(Es[0])}개 · 중앙값 ${nf(q(Es,.5))}개 · 최악 ${nf(Es[R-1])}개`];
+  }
+  if(k==='own'&&lastOwn){
+    const {reach,R,s:os,B,fin}=lastOwn; let ge=0; for(let l=t;l<=N;l++)ge+=reach[l];
+    let mean=0; for(let l=0;l<=N;l++)mean+=l*reach[l]; mean/=R;
+    return [`에테르 ${nf(B)}개로 ${os}강부터 · ${nf(R)}명 시뮬`,
+            `목표 ${t}강 도달 ${nf(ge/R*100,1)}% · 평균 ${nf(mean,1)}강`];
+  }
+  return [`에테르 강화 ${s}→${t}강 · 기대 ${nf(theory.eth)}개 (${moneyShort(theory.eth*pr)})`,''];
+}
+function drawQR(g,x,y,size,text,fg,bg){
+  const qr=qrcode(0,'M'); qr.addData(text); qr.make();
+  const n=qr.getModuleCount(), quiet=2, cell=size/(n+quiet*2);
+  g.fillStyle=bg; g.fillRect(x,y,size,size); g.fillStyle=fg;
+  for(let r=0;r<n;r++)for(let c=0;c<n;c++)if(qr.isDark(r,c))
+    g.fillRect(Math.round(x+(c+quiet)*cell),Math.round(y+(r+quiet)*cell),Math.ceil(cell),Math.ceil(cell));
+}
+async function makeShareImage(){
+  await ensureLibs();
+  const cs=getComputedStyle(document.documentElement), col=n=>cs.getPropertyValue(n).trim();
+  const scale=Math.min(2,window.devicePixelRatio||1)||1;
+  const shot=await html2canvas(document.querySelector('.app'),{backgroundColor:col('--bg'),scale,useCORS:true,logging:false,
+    ignoreElements:el=>['fx','screenFlash','toastS','themeBtn','openTbl','shareBtn'].includes(el.id)||(el.classList&&el.classList.contains('floatTxt'))});
+  const M=Math.round(12*scale), W=shot.width+M*2, pad=Math.round(14*scale), qs=Math.round(92*scale), FH=qs+pad*2;
+  const cv=document.createElement('canvas'); cv.width=W; cv.height=shot.height+M*2+FH;
+  const g=cv.getContext('2d');
+  g.fillStyle=col('--bg'); g.fillRect(0,0,W,cv.height);
+  g.drawImage(shot,M,M);
+  // 결과 띠
+  const y0=shot.height+M*2;
+  g.fillStyle=col('--panel'); g.fillRect(0,y0,W,FH);
+  g.fillStyle=col('--ether'); g.fillRect(0,y0,W,Math.max(2,Math.round(3*scale)));
+  drawQR(g,W-pad-qs,y0+pad,qs,SITE,'#111','#fff');
+  const tx=pad, tw=W-pad*3-qs, [l1,l2]=shareLines();
+  const fit=(txt,px,weight)=>{let f=px; do{g.font=`${weight} ${f}px "Noto Sans KR", sans-serif`;}while(g.measureText(txt).width>tw&&--f>9*scale); return f;};
+  g.textBaseline='top';
+  fit(l1,Math.round(15*scale),700); g.fillStyle=col('--ink'); g.fillText(l1,tx,y0+pad);
+  if(l2){fit(l2,Math.round(14*scale),700); g.fillStyle=/손해/.test(l2)?col('--danger'):/이득/.test(l2)?col('--ok'):col('--ether'); g.fillText(l2,tx,y0+pad+Math.round(24*scale));}
+  const d=new Date(), ds=`${d.getFullYear()}.${String(d.getMonth()+1).padStart(2,'0')}.${String(d.getDate()).padStart(2,'0')}`;
+  g.font=`500 ${Math.round(12*scale)}px "Noto Sans KR", sans-serif`; g.fillStyle=col('--muted');
+  g.fillText('QR을 찍으면 시뮬레이터가 열려요',tx,y0+pad+Math.round(52*scale));
+  const l4=`${SITE.replace('https://','')} · ${ds}`;
+  let f4=Math.round(12*scale); do{g.font=`600 ${f4}px "JetBrains Mono", monospace`;}while(g.measureText(l4).width>tw&&--f4>8*scale);
+  g.fillStyle=col('--ether'); g.fillText(l4,tx,y0+pad+Math.round(70*scale));
+  return new Promise(ok=>cv.toBlob(b=>ok(b),'image/jpeg',.9));
+}
+let shareFile=null, shareURL='';
+async function openShare(){
+  const btn=$('shareBtn'); btn.disabled=true; btn.textContent='캡처 중…';
+  try{
+    const blob=await makeShareImage(), [l1]=shareLines();
+    const d=new Date(), name=`에테르강화_${d.getMonth()+1}${String(d.getDate()).padStart(2,'0')}_${d.getHours()}${String(d.getMinutes()).padStart(2,'0')}.jpg`;
+    shareFile=new File([blob],name,{type:'image/jpeg'});
+    if(shareURL)URL.revokeObjectURL(shareURL); shareURL=URL.createObjectURL(blob);
+    $('shareImg').src=shareURL; $('shareText').value=`${l1}\n${SITE}`;
+    $('shareGo').hidden=!(navigator.canShare&&navigator.canShare({files:[shareFile]}));
+    $('shareDlg').showModal();
+  }catch(e){shareToast('캡처에 실패했습니다. 인터넷 연결을 확인하고 다시 눌러 주세요.');}
+  finally{btn.disabled=false; btn.textContent='공유';}
+}
+function shareToast(msg){const t=$('toastS');t.textContent=msg;t.hidden=false;clearTimeout(t._h);t._h=setTimeout(()=>t.hidden=true,2600);}
+$('shareBtn').addEventListener('click',openShare);
+$('shareGo').addEventListener('click',async()=>{
+  try{await navigator.share({files:[shareFile],title:'에테르 강화 결과',text:$('shareText').value});}
+  catch(e){if(e.name!=='AbortError')shareToast('공유 창을 열 수 없습니다. 저장 후 카톡에서 보내 주세요.');}
+});
+$('shareSave').addEventListener('click',()=>{
+  const a=document.createElement('a'); a.href=shareURL; a.download=shareFile.name; document.body.appendChild(a); a.click(); a.remove();
+  shareToast('저장했습니다. 안 되면 이미지를 길게 눌러 저장하세요.');
+});
+$('shareCopy').addEventListener('click',async()=>{
+  try{await navigator.clipboard.writeText($('shareText').value);shareToast('결과 문장과 링크를 복사했습니다.');}
+  catch(e){$('shareText').select();shareToast('글자를 길게 눌러 복사하세요.');}
+});
+$('shareClose').addEventListener('click',()=>$('shareDlg').close());
+
 </script>
 </body>
 </html>
